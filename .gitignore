@@ -1,0 +1,30 @@
+# Caché y archivos compilados de Python
+__pycache__/
+*.py[cod]
+
+# Entornos virtuales
+.venv/
+venv/
+env/
+
+# Variables de entorno y secretos locales
+.env
+.env.*
+!.env.example
+
+# Editores
+.idea/
+.vscode/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# Cachés de herramientas de desarrollo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+Desktop.ini
