@@ -1,0 +1,13 @@
+# Alternativa opcional a .venv para quienes ya usan Conda.
+name: alerta_ruta
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - pandas
+  - openpyxl
+  - numpy
+  - matplotlib
+  - scikit-learn
+  - jupyterlab
+  - ipykernel

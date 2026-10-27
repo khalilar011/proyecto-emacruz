@@ -1,0 +1,9 @@
+# Dependencias iniciales para análisis y cuadernos.
+# El framework web se elegirá cuando se defina la arquitectura del prototipo.
+pandas
+openpyxl
+numpy
+matplotlib
+scikit-learn
+jupyterlab
+ipykernel
