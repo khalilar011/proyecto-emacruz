@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Prototipo local para consultar las frecuencias publicadas de recolección por zona."
+    />
+    <title>Alerta Ruta – EMACRUZ</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 48 48" role="img">
+            <path d="M12 38c0-9 5-11 12-14s12-5 12-14" />
+            <circle cx="12" cy="38" r="4" />
+            <circle cx="36" cy="10" r="4" />
+          </svg>
+        </div>
+        <div class="hero-copy">
+          <p class="eyebrow">Prototipo EMACRUZ · Santa Cruz de la Sierra</p>
+          <h1>Alerta Ruta</h1>
+          <p class="hero-subtitle">
+            Consulta cuándo pasa el servicio de recolección por tu zona.
+          </p>
+        </div>
+        <div class="source-summary" aria-label="Resumen de datos">
+          <strong id="record-count">—</strong>
+          <span>frecuencias publicadas</span>
+        </div>
+      </header>
+
+      <main>
+        <section class="search-card" aria-labelledby="search-title">
+          <div class="search-heading">
+            <div>
+              <p class="step-label">Consulta rápida</p>
+              <h2 id="search-title">Selecciona tu zona</h2>
+            </div>
+            <span class="data-badge">Datos del Excel</span>
+          </div>
+
+          <label class="select-label" for="zone-select">Zona y área de cobertura</label>
+          <div class="select-wrap">
+            <select id="zone-select" disabled>
+              <option value="">Cargando frecuencias…</option>
+            </select>
+            <svg viewBox="0 0 20 20" aria-hidden="true">
+              <path d="m5 7.5 5 5 5-5" />
+            </svg>
+          </div>
+          <p id="load-status" class="helper-text" role="status" aria-live="polite">
+            Leyendo la información preparada desde el Excel…
+          </p>
+        </section>
+
+        <section id="empty-state" class="empty-state" aria-live="polite">
+          <div class="empty-icon" aria-hidden="true">⌁</div>
+          <div>
+            <h2>Tu horario, en un solo lugar</h2>
+            <p>Elige una opción para ver días, turno y horario publicados.</p>
+          </div>
+        </section>
+
+        <section id="result-card" class="result-card" hidden aria-live="polite">
+          <div class="result-heading">
+            <div>
+              <p id="record-id" class="record-id"></p>
+              <h2 id="result-zone"></h2>
+              <p id="result-area" class="result-area"></p>
+            </div>
+            <span id="result-shift" class="shift-badge"></span>
+          </div>
+
+          <div class="details-grid">
+            <div class="detail-item">
+              <span class="detail-label">Sector</span>
+              <strong id="result-sector"></strong>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Zona</span>
+              <strong id="result-zone-detail"></strong>
+            </div>
+            <div class="detail-item detail-wide">
+              <span class="detail-label">Área</span>
+              <strong id="result-area-detail"></strong>
+            </div>
+            <div id="district-detail" class="detail-item detail-wide">
+              <span class="detail-label">Distritos indicados</span>
+              <strong id="result-districts"></strong>
+            </div>
+          </div>
+
+          <div class="schedule-panel">
+            <div class="schedule-copy">
+              <span class="detail-label">Días de recolección</span>
+              <strong id="result-days"></strong>
+              <p id="holiday-detail" class="holiday-detail"></p>
+            </div>
+            <div id="schedule-time" class="time-grid"></div>
+          </div>
+
+          <div id="week-days" class="week-days" aria-label="Días activos de la semana"></div>
+
+          <aside id="review-note" class="review-note" hidden>
+            <span aria-hidden="true">i</span>
+            <p><strong>Nota de revisión</strong><br /><span id="review-note-text"></span></p>
+          </aside>
+        </section>
+
+        <section id="error-panel" class="error-panel" hidden role="alert">
+          <strong>No se pudieron cargar las frecuencias.</strong>
+          <p>
+            Inicia la página con un servidor local y comprueba que
+            <code>web/data/frecuencias.json</code> exista.
+          </p>
+        </section>
+      </main>
+
+      <footer>
+        <p>
+          Fuente: <strong>Base_Emacruz_sectores_y_frecuencias.xlsx</strong>, hoja
+          <strong>Frecuencias</strong>.
+        </p>
+        <p>Prototipo académico. La vigencia operativa de los horarios no está acreditada.</p>
+      </footer>
+    </div>
+  </body>
+</html>
