@@ -14,3 +14,11 @@ Las seis fases son las épicas de organización en Jira. Una épica agrupa histo
 La pregunta vigente de investigación busca **factores que permiten predecir** mayor acumulación durante restricciones de diésel. Las frecuencias programadas por sí solas no permiten medir acumulación real. Separar esta investigación de la función inmediata del portal: comunicar estados aprobados por zona. Si la disponibilidad de observaciones no permite modelar, documentar la limitación y no fabricar evidencia predictiva.
 
 Para la fase 2 académica se implementan los estados técnicos `NORMAL`, `DEMORA` y `SERVICIO_SUSPENDIDO`. Son registros manuales simulados y no sustituyen la nomenclatura, aprobación ni publicación institucional que EMACRUZ pudiera definir. La consulta usa únicamente los 26 barrios verificables del Excel del Distrito 2; no busca puntos de referencia ni infiere la ubicación precisa de un vecino porque la fuente no contiene esos datos.
+
+## Extensión de despliegue: mapa y administración
+
+La programación continúa derivándose del Excel inmutable. El GeoJSON abierto aporta únicamente límite distrital y UV, mientras Supabase almacena incidencias y su historial. Esta separación evita convertir una incidencia en un cambio de horario o presentar una geometría territorial como recorrido operativo.
+
+El vecino mantiene acceso anónimo de solo lectura a incidencias publicadas, simuladas, vigentes y no retiradas. El administrador usa correo/contraseña, debe figurar en `admin_users` y escribe solo mediante funciones PostgreSQL que vuelven a validar objetivo, servicio y ventana. RLS es el control efectivo; la ruta del panel no es secreta. El rol autorizado publica directamente en este prototipo: el flujo institucional operador/supervisor → administrador/comunicador con una aprobación separada queda pendiente de una historia futura.
+
+La visualización cartográfica se limita a cobertura por UV y secuencia programada. No se infieren posiciones de camiones, GPS, calles recorridas ni polígonos exactos de barrios. Una suspensión prevalece sobre una demora; una demora prevalece sobre la ausencia de incidencias, que se comunica como `NORMAL` sin confirmar la operación real.

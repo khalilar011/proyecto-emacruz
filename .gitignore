@@ -3,10 +3,16 @@ data/raw/*
 !data/raw/.gitkeep
 !data/raw/distrito-2/
 !data/raw/distrito-2/Distrito_2_horarios_SIMULADOS.xlsx
+!data/raw/geodata/
+!data/raw/geodata/*.geojson
+!data/raw/geodata/*.md
+!data/raw/geodata/SHA256SUMS
 data/processed/*
 !data/processed/.gitkeep
 !data/processed/distrito-2/
 !data/processed/distrito-2/*.json
+!data/processed/geodata/
+!data/processed/geodata/*.geojson
 reports/figures/*
 !reports/figures/.gitkeep
 

@@ -40,6 +40,36 @@ class ExportTests(unittest.TestCase):
             self.assertTrue({item["id"] for item in active} <= service_ids)
 
 
+class MapAndSupabaseTests(unittest.TestCase):
+    def test_map_and_catalog_outputs_are_reproducible(self) -> None:
+        for script in ("scripts/prepare_map_data.py", "scripts/generate_supabase_catalog.py"):
+            result = subprocess.run(
+                [sys.executable, script, "--check"], cwd=ROOT,
+                capture_output=True, text=True, check=False,
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+        geodata = json.loads(
+            (ROOT / "web/data/geodata/distrito-2-uv.geojson").read_text(encoding="utf-8")
+        )
+        self.assertEqual(len(geodata["features"]), 16)
+        self.assertEqual(
+            sorted(item["properties"]["uv"] for item in geodata["features"] if item["properties"]["kind"] == "uv"),
+            [15, 16, 17, 18, 19, 20, 21, 22, 37, 38, 39, 40, 41, 42, 43],
+        )
+
+    def test_supabase_migration_has_rls_rpc_and_no_browser_secret(self) -> None:
+        schema = (ROOT / "supabase/migrations/0001_alerta_ruta_schema.sql").read_text(encoding="utf-8")
+        for table in ("admin_users", "neighborhood_catalog", "service_catalog", "incidents", "incident_history"):
+            self.assertIn(f"alter table public.{table} enable row level security", schema)
+        self.assertIn('create policy "Public reads active simulated incidents"', schema)
+        self.assertIn("create or replace function public.create_alerta_ruta_incident", schema)
+        self.assertIn("create or replace function public.retire_alerta_ruta_incident", schema)
+        self.assertIn("affected_service_ids", schema)
+        config = (ROOT / "web/config.js").read_text(encoding="utf-8")
+        self.assertNotIn("service_role", config.split("window.ALERTA_RUTA_CONFIG", 1)[1])
+        self.assertIn('supabasePublishableKey: ""', config)
+
+
 class AlertCliTests(unittest.TestCase):
     def run_cli(self, alerts: Path, *arguments: str) -> subprocess.CompletedProcess[str]:
         return subprocess.run(

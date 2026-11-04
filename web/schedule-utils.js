@@ -88,9 +88,11 @@
   }
 
   function activeIncident(incidents, barrio, now = new Date()) {
+    const priority = { NORMAL: 0, DEMORA: 1, SERVICIO_SUSPENDIDO: 2 };
     return incidents
       .filter((item) => incidentIsActive(item, now) && incidentApplies(item, barrio))
-      .sort((a, b) => Date.parse(b.actualizada_en) - Date.parse(a.actualizada_en))[0] || null;
+      .sort((a, b) => (priority[b.estado] ?? -1) - (priority[a.estado] ?? -1)
+        || Date.parse(b.actualizada_en) - Date.parse(a.actualizada_en))[0] || null;
   }
 
   return { TIME_ZONE, normalizeText, santaCruzParts, nextService, incidentIsActive, incidentApplies, activeIncident };

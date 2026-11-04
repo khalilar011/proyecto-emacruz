@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex,nofollow" />
+    <meta name="theme-color" content="#075f4b" />
+    <title>Administración · Alerta Ruta</title>
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="stylesheet" href="admin.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js" integrity="sha384-GFr3yTh5lJznCbZfpTtXnwboFsxqtTQoeTZCRHhE0579KrRmlCzen5AA8ohaB5ug" crossorigin="anonymous" defer></script>
+    <script src="../config.js" defer></script>
+    <script src="../incidents.js" defer></script>
+    <script src="admin-core.js" defer></script>
+    <script src="admin.js" defer></script>
+  </head>
+  <body class="admin-body">
+    <a class="skip-link" href="#admin-main">Saltar al contenido</a>
+    <header class="admin-header"><a class="brand" href="../"><span class="brand-icon" aria-hidden="true">AR</span><span><strong>Alerta Ruta</strong><small>Panel de administración</small></span></a><div><span id="session-user"></span><button id="logout" class="ghost-button" type="button" hidden>Cerrar sesión</button></div></header>
+    <main id="admin-main" class="admin-main">
+      <aside class="academic-notice" role="note"><span aria-hidden="true">!</span><p><strong>Simulación académica — no es un sistema oficial de EMACRUZ.</strong> Toda incidencia publicada desde aquí se identifica como simulada.</p></aside>
+
+      <section id="setup-panel" class="auth-card" hidden>
+        <p class="eyebrow">Configuración pendiente</p><h1>Conecta Supabase antes de iniciar sesión</h1>
+        <p>El panel está preparado, pero este despliegue no contiene una URL ni una clave pública de Supabase. Sigue la guía del repositorio y completa <code>web/config.js</code>. Nunca uses una clave <code>service_role</code>.</p>
+        <a class="secondary-button" href="../">Volver a la consulta pública</a>
+      </section>
+
+      <section id="login-panel" class="auth-card" hidden aria-labelledby="login-title">
+        <p class="eyebrow">Acceso restringido</p><h1 id="login-title">Administración de incidencias</h1><p>Ingresa con una cuenta autorizada. No existe registro público desde este sitio.</p>
+        <form id="login-form"><label>Correo electrónico<input id="login-email" type="email" autocomplete="username" required /></label><label>Contraseña<input id="login-password" type="password" autocomplete="current-password" minlength="8" required /></label><button class="primary-button" type="submit">Iniciar sesión</button><p id="login-message" class="form-message" role="alert"></p></form>
+      </section>
+
+      <section id="dashboard" hidden>
+        <div class="admin-title"><div><p class="eyebrow">Distrito Municipal N.º 2</p><h1>Gestión de alertas</h1><p>Publica únicamente incidencias simuladas con una vigencia definida.</p></div><span class="secure-badge">Acceso autorizado · RLS</span></div>
+        <div class="admin-grid">
+          <section class="admin-card" aria-labelledby="form-title">
+            <div class="card-title"><div><p class="eyebrow">Crear o modificar</p><h2 id="form-title">Nueva alerta</h2></div><button id="cancel-edit" class="text-button" type="button" hidden>Cancelar edición</button></div>
+            <form id="incident-form">
+              <input id="incident-id" type="hidden" />
+              <div class="form-grid two"><label>Objetivo principal<select id="target-type" required><option value="truck">Camión</option><option value="service">Servicio</option></select></label><label>Camión o servicio<select id="target-id" required></select></label></div>
+              <label>Limitar a barrios (opcional)<select id="neighborhoods" multiple size="6" aria-describedby="neighborhood-help"></select><small id="neighborhood-help">Sin selección se incluyen automáticamente todos los barrios del objetivo que tengan servicio dentro de la vigencia.</small></label>
+              <div class="form-grid two"><label>Estado<select id="incident-state" required><option value="DEMORA">Demora</option><option value="SERVICIO_SUSPENDIDO">Servicio suspendido</option><option value="NORMAL">Normal</option></select></label><label>Motivo<select id="reason-code" required><option value="LLUVIA">Lluvia</option><option value="FALLA_MECANICA">Falla mecánica</option><option value="PROBLEMA_TECNICO">Problema técnico</option><option value="OTRO">Otro</option></select></label></div>
+              <label>Descripción del motivo<input id="reason-detail" maxlength="240" minlength="3" value="Lluvia" required /></label>
+              <label>Demora estimada en minutos<input id="delay-minutes" type="number" min="1" max="1440" value="45" /></label>
+              <div class="form-grid two"><label>Inicio (hora de Santa Cruz)<input id="starts-at" type="datetime-local" required /></label><label>Vencimiento (hora de Santa Cruz)<input id="expires-at" type="datetime-local" required /></label></div>
+              <label>Observaciones (opcional)<textarea id="notes" maxlength="1000" rows="3"></textarea></label>
+              <div id="scope-preview" class="scope-preview" role="status" aria-live="polite"></div>
+              <button id="publish-button" class="primary-button" type="submit">Publicar alerta</button><p id="form-message" class="form-message" role="alert"></p>
+            </form>
+          </section>
+
+          <section class="admin-card alerts-card" aria-labelledby="alerts-title">
+            <div class="card-title"><div><p class="eyebrow">Historial administrativo</p><h2 id="alerts-title">Incidencias</h2></div><label class="compact-label">Mostrar<select id="status-filter"><option value="TODAS">Todas</option><option value="ACTIVA">Activas</option><option value="PROGRAMADA">Programadas</option><option value="VENCIDA">Vencidas</option><option value="RETIRADA">Retiradas</option></select></label></div>
+            <p id="alerts-message" class="form-message" role="status"></p>
+            <div class="table-wrap"><table><thead><tr><th>Estado</th><th>Objetivo</th><th>Motivo</th><th>Demora</th><th>Publicación</th><th>Acciones</th></tr></thead><tbody id="alerts-body"></tbody></table></div>
+          </section>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

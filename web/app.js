@@ -1,11 +1,11 @@
 "use strict";
 
 const DATA_URL = "data/distrito-2.json";
-const ALERTS_URL = "data/incidencias.json";
 const dayOrder = ["lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo"];
 const dayLabels = { lunes: "Lun", martes: "Mar", miercoles: "Mié", jueves: "Jue", viernes: "Vie", sabado: "Sáb", domingo: "Dom" };
 const stateLabels = { NORMAL: "Normal", DEMORA: "Demora", SERVICIO_SUSPENDIDO: "Servicio suspendido" };
 const utils = window.AlertaRutaSchedule;
+const incidentUtils = window.AlertaRutaIncidents;
 
 const elements = Object.fromEntries(
   [
@@ -13,7 +13,7 @@ const elements = Object.fromEntries(
     "result-name", "result-uv", "result-frequency", "service-status", "status-title", "status-badge", "status-message",
     "status-details", "status-disclaimer", "next-service", "next-time", "next-truck", "coverage-uv", "map-reference",
     "week-grid", "load-error", "selected-map-hint", "main-map", "map-tabs", "open-map", "map-dialog", "dialog-title",
-    "dialog-image", "close-map",
+    "dialog-image", "close-map", "incident-source", "map-truck-filter",
   ].map((id) => [id.replaceAll("-", "_"), document.getElementById(id)]),
 );
 
@@ -24,6 +24,7 @@ let selectedBarrio = null;
 let selectedMap = null;
 let zoom = 1;
 let alertsUpdated = null;
+let services = [];
 
 function formatDateTime(value) {
   if (!value) return "No indicada";
@@ -66,12 +67,13 @@ function filterBarrios() {
 
 function showEmpty() {
   selectedBarrio = null;
+  window.AlertaRutaMap?.selectBarrio(null, false);
   elements.result.hidden = true;
   elements.empty_state.hidden = false;
 }
 
 function renderStatus(barrio) {
-  const incident = utils.activeIncident(incidents, barrio, new Date());
+  const incident = incidentUtils.statusForBarrio(incidents, barrio, new Date());
   const state = incident?.estado || "NORMAL";
   elements.service_status.className = `status-card ${state === "DEMORA" ? "status-delay" : state === "SERVICIO_SUSPENDIDO" ? "status-suspended" : "status-normal"}`;
   elements.status_title.textContent = stateLabels[state];
@@ -96,7 +98,7 @@ function renderStatus(barrio) {
     ["Actualización", formatDateTime(incident.actualizada_en)],
     ["Vence", formatDateTime(incident.vence)],
     ["Camiones afectados", (incident.objetivos.camiones || []).join(", ") || "No indicados"],
-    ["Barrios afectados", (incident.objetivos.barrios || []).join(", ") || "Según asignación del objetivo"],
+    ["Barrios afectados", (incident.objetivos.barrios || []).map((id) => barrios.find((item) => item.id === id)?.nombre || id).join(", ") || "Según asignación del objetivo"],
   ];
   for (const [label, value] of details) {
     const item = document.createElement("span");
@@ -155,6 +157,7 @@ function renderBarrio(barrio) {
   renderStatus(barrio);
   renderNext(barrio);
   renderWeek(barrio);
+  window.AlertaRutaMap?.selectBarrio(barrio.id);
   elements.empty_state.hidden = true;
   elements.result.hidden = false;
 }
@@ -198,20 +201,43 @@ function changeZoom(delta) {
 
 async function load() {
   try {
-    const [dataResponse, alertsResponse] = await Promise.all([fetch(DATA_URL, { cache: "no-store" }), fetch(ALERTS_URL, { cache: "no-store" })]);
-    if (!dataResponse.ok || !alertsResponse.ok) throw new Error(`HTTP ${dataResponse.status}/${alertsResponse.status}`);
-    const [data, alertData] = await Promise.all([dataResponse.json(), alertsResponse.json()]);
-    if (!Array.isArray(data.barrios) || data.barrios.length !== 26 || !Array.isArray(alertData.incidencias)) throw new Error("Estructura JSON inesperada");
+    const dataResponse = await fetch(DATA_URL, { cache: "no-store" });
+    if (!dataResponse.ok) throw new Error(`HTTP ${dataResponse.status}`);
+    const data = await dataResponse.json();
+    if (!Array.isArray(data.barrios) || data.barrios.length !== 26 || !Array.isArray(data.servicios)) throw new Error("Estructura JSON inesperada");
     barrios = data.barrios;
-    incidents = alertData.incidencias;
-    alertsUpdated = alertData.ultima_actualizacion;
+    services = data.servicios;
     maps = data.mapas;
     populateSelect();
     renderMaps();
+    const trucks = [...new Set(services.map((item) => item.camion))].sort();
+    for (const truck of trucks) {
+      const option = document.createElement("option");
+      option.value = truck;
+      option.textContent = truck;
+      elements.map_truck_filter.append(option);
+    }
     elements.barrio_count.textContent = String(barrios.length);
     elements.barrio_search.disabled = false;
     elements.barrio_select.disabled = false;
     elements.search_status.textContent = `${barrios.length} barrios disponibles.`;
+    await window.AlertaRutaMap.initialize({ onSelect: (id) => {
+      const barrio = barrios.find((item) => item.id === id);
+      if (!barrio) return;
+      elements.barrio_select.value = id;
+      renderBarrio(barrio);
+      document.getElementById("consulta").scrollIntoView({ behavior: "smooth", block: "start" });
+    } });
+    window.AlertaRutaMap.setData(barrios, services, incidents);
+    await window.AlertaRutaData.start(async (update) => {
+      incidents = update.incidents;
+      alertsUpdated = update.updatedAt;
+      elements.incident_source.textContent = update.mode === "supabase"
+        ? "Fuente de incidencias: Supabase · actualización automática activa."
+        : `Fuente de incidencias: respaldo JSON local.${update.warning ? ` ${update.warning}` : ""}`;
+      window.AlertaRutaMap.setData(barrios, services, incidents);
+      if (selectedBarrio) renderStatus(selectedBarrio);
+    });
   } catch (error) {
     console.error(error);
     elements.barrio_search.disabled = true;

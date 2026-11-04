@@ -6,15 +6,22 @@
     <meta name="description" content="Alerta Ruta: consulta académica de horarios simulados e incidencias manuales del Distrito Municipal N.º 2." />
     <meta name="theme-color" content="#075f4b" />
     <title>Alerta Ruta · Distrito Municipal N.º 2</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous" />
     <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js" integrity="sha384-GFr3yTh5lJznCbZfpTtXnwboFsxqtTQoeTZCRHhE0579KrRmlCzen5AA8ohaB5ug" crossorigin="anonymous" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous" defer></script>
+    <script src="config.js" defer></script>
     <script src="schedule-utils.js" defer></script>
+    <script src="incidents.js" defer></script>
+    <script src="supabase-data.js" defer></script>
+    <script src="map.js" defer></script>
     <script src="app.js" defer></script>
   </head>
   <body>
     <a class="skip-link" href="#consulta">Saltar a la consulta</a>
     <header class="site-header">
       <a class="brand" href="#inicio" aria-label="Alerta Ruta, inicio"><span class="brand-icon" aria-hidden="true">AR</span><span><strong>Alerta Ruta</strong><small>Distrito Municipal N.º 2</small></span></a>
-      <nav aria-label="Navegación principal"><a href="#consulta">Consulta</a><a href="#mapa">Mapa</a><a href="#informacion">Información</a></nav>
+      <nav aria-label="Navegación principal"><a href="#consulta">Consulta</a><a href="#mapa">Mapa</a><a href="#informacion">Información</a><a href="admin/">Administración</a></nav>
     </header>
 
     <main id="inicio">
@@ -42,6 +49,7 @@
             <div class="status-top"><span id="status-dot" aria-hidden="true"></span><div><p class="label">Estado del servicio</p><h3 id="status-title">Normal</h3></div><span id="status-badge">NORMAL</span></div>
             <p id="status-message" class="status-message">No hay demora prevista.</p><div id="status-details" class="status-details"></div>
             <p id="status-disclaimer" class="status-disclaimer">Se refiere a incidencias registradas en este prototipo, no a una confirmación operativa en tiempo real.</p>
+            <p id="incident-source" class="data-source">Fuente de incidencias: cargando…</p>
           </section>
           <div class="summary-grid">
             <section class="info-card next-card"><p class="label">Próximo servicio programado</p><h3 id="next-service">—</h3><p id="next-time"></p><div><span>Camión simulado</span><strong id="next-truck">—</strong></div></section>
@@ -53,15 +61,26 @@
       </section>
 
       <section id="mapa" class="section map-section" aria-labelledby="map-title">
-        <div class="section-heading split-heading"><div><p class="eyebrow">Orientación territorial</p><h2 id="map-title">Mapa de barrios del Distrito 2</h2><p id="selected-map-hint">Selecciona un barrio para ver su nombre de referencia en el mapa.</p></div><button id="open-map" class="secondary-button" type="button">Ampliar mapa</button></div>
-        <div class="map-frame"><img id="main-map" src="assets/maps/distrito-2-barrios.webp" alt="Mapa de conformación de barrios del Distrito Municipal N.º 2" /></div>
-        <div id="map-tabs" class="map-tabs" aria-label="Mapas disponibles"></div>
-        <p class="map-note">Las imágenes sirven para orientación. No contienen coordenadas, GPS ni trayectorias de los camiones.</p>
+        <div class="section-heading"><p class="eyebrow">Orientación territorial</p><h2 id="map-title">Distrito 2 sobre un mapa interactivo</h2><p id="selected-map-hint">Selecciona un barrio en la consulta o pulsa su nombre dentro de una unidad vecinal.</p></div>
+        <div class="map-controls" aria-label="Filtros del mapa">
+          <label>Camión<select id="map-truck-filter"><option value="TODOS">Todos los camiones</option></select></label>
+          <label>Día<select id="map-day-filter"><option value="TODOS">Todos los días</option><option value="lunes">Lunes</option><option value="martes">Martes</option><option value="miercoles">Miércoles</option><option value="jueves">Jueves</option><option value="viernes">Viernes</option><option value="sabado">Sábado</option><option value="domingo">Domingo</option></select></label>
+          <label>Estado<select id="map-state-filter"><option value="TODOS">Todos los estados</option><option value="NORMAL">Normal</option><option value="DEMORA">Demora</option><option value="SERVICIO_SUSPENDIDO">Suspendido</option></select></label>
+          <p id="map-filter-count" role="status" aria-live="polite">Cargando cobertura…</p>
+        </div>
+        <div class="interactive-map-layout">
+          <div><div id="interactive-map" role="application" aria-label="Mapa interactivo del Distrito Municipal N.º 2"></div><div id="map-unavailable" class="error-panel" hidden><strong>El mapa de calles no está disponible.</strong><p>La consulta vecinal y los mapas de referencia permanecen utilizables.</p></div></div>
+          <aside class="map-side"><p class="label">Cobertura programada</p><div id="map-sequence"><p>Elige un camión y un día para ver la secuencia de cobertura programada.</p></div><div class="map-legend"><span><i class="normal"></i>Normal</span><span><i class="delay"></i>Demora</span><span><i class="suspended"></i>Suspendido</span></div></aside>
+        </div>
+        <p class="map-note"><strong>No es rastreo GPS ni un recorrido oficial.</strong> Los polígonos verificables representan el distrito y sus 15 unidades vecinales. Un resaltado indica que la UV contiene al menos un barrio coincidente, no que toda la UV esté afectada. La secuencia muestra servicios del Excel, no calles recorridas.</p>
+        <div class="reference-heading"><div><p class="eyebrow">Referencias secundarias</p><h3>Mapas proporcionados al proyecto</h3></div><button id="open-map" class="secondary-button" type="button">Abrir visor de imágenes</button></div>
+        <div class="map-frame reference-preview"><img id="main-map" src="assets/maps/distrito-2-barrios.webp" alt="Mapa de conformación de barrios del Distrito Municipal N.º 2" /></div>
+        <div id="map-tabs" class="map-tabs" aria-label="Mapas de referencia disponibles"></div>
       </section>
 
       <section id="informacion" class="section information" aria-labelledby="info-title">
         <div class="section-heading"><p class="eyebrow">Antes de usar la información</p><h2 id="info-title">Qué significa este prototipo</h2></div>
-        <div class="information-grid"><article><span>01</span><h3>Programación simulada</h3><p>Las ventanas horarias son por barrio, no horas de llegada a cada domicilio.</p></article><article><span>02</span><h3>Alertas manuales</h3><p>Una persona autorizada del equipo actualiza el archivo de incidencias y publica el cambio.</p></article><article><span>03</span><h3>Sin seguimiento en vivo</h3><p>No hay GPS, API meteorológica ni confirmación automática de recorridos.</p></article></div>
+        <div class="information-grid"><article><span>01</span><h3>Programación simulada</h3><p>Las ventanas horarias son por barrio, no horas de llegada a cada domicilio.</p></article><article><span>02</span><h3>Incidencias administradas</h3><p>Con Supabase configurado, un administrador autorizado publica cambios desde el panel. El JSON local es un único respaldo de demostración.</p></article><article><span>03</span><h3>Sin seguimiento en vivo</h3><p>No hay GPS, API meteorológica ni confirmación automática de recorridos.</p></article></div>
       </section>
     </main>
 

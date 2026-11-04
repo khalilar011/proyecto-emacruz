@@ -50,4 +50,8 @@ assert.equal(utils.incidentApplies(byService, barrio), true);
 incident.retirada = { fecha: "2026-11-02T09:30:00-04:00" };
 assert.equal(utils.incidentIsActive(incident, new Date("2026-11-02T09:45:00-04:00")), false);
 
+const priorityIncident = { ...byService, id: "delay", estado: "DEMORA" };
+const suspensionIncident = { ...byService, id: "suspension", estado: "SERVICIO_SUSPENDIDO", actualizada_en: "2026-11-02T07:00:00-04:00" };
+assert.equal(utils.activeIncident([priorityIncident, suspensionIncident], barrio, new Date("2026-11-02T09:00:00-04:00")).id, "suspension");
+
 console.log("Pruebas JavaScript: búsqueda normalizada, próximo servicio y vigencia cumplen.");
