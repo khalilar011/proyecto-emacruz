@@ -1,8 +1,12 @@
 # Datos y resultados locales; conservar las carpetas vacías
 data/raw/*
 !data/raw/.gitkeep
+!data/raw/distrito-2/
+!data/raw/distrito-2/Distrito_2_horarios_SIMULADOS.xlsx
 data/processed/*
 !data/processed/.gitkeep
+!data/processed/distrito-2/
+!data/processed/distrito-2/*.json
 reports/figures/*
 !reports/figures/.gitkeep
 

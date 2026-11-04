@@ -1,0 +1,2777 @@
+{
+  "esquema": 2,
+  "distrito": {
+    "id": "DM-2",
+    "nombre": "Distrito Municipal N.º 2",
+    "municipio": "Santa Cruz de la Sierra",
+    "zona_horaria": "America/La_Paz"
+  },
+  "simulacion": true,
+  "advertencia": "SIMULACIÓN ACADÉMICA — NO ES INFORMACIÓN OPERATIVA OFICIAL",
+  "fuente": {
+    "archivo": "Distrito_2_horarios_SIMULADOS.xlsx",
+    "sha256": "35fa74023ffdbfb7ac894a2dd961724af5414ac4d702ce53f53eb81ae8c8c47e",
+    "hojas": [
+      "Consulta_barrios",
+      "Agenda_camiones",
+      "Fuentes"
+    ],
+    "vigencia_operativa": "No acreditada"
+  },
+  "limitaciones": {
+    "rutas_operativas": "No disponibles en la fuente",
+    "coordenadas": "No disponibles en la fuente",
+    "tiempo_real": false
+  },
+  "mapas": [
+    {
+      "id": "barrios",
+      "titulo": "Barrios del Distrito 2",
+      "archivo": "assets/maps/distrito-2-barrios.webp"
+    },
+    {
+      "id": "plano",
+      "titulo": "Plano municipal del Distrito 2",
+      "archivo": "assets/maps/distrito-2-plano-municipal.jpg"
+    },
+    {
+      "id": "uv",
+      "titulo": "Unidades vecinales y catálogo de barrios",
+      "archivo": "assets/maps/distrito-2-unidades-vecinales.webp"
+    }
+  ],
+  "barrios": [
+    {
+      "id": "D2-B11",
+      "nombre": "Chacarrilla",
+      "uv": 41,
+      "fila_origen": 5,
+      "nombre_mapa": "Chacarilla",
+      "referencia_fuente": "Página impresa 15, cuadro 2, bloque 2, fila 2",
+      "observacion_fuente": "La tabla dice CHACARRILLA; el mapa usa Chacarilla / La Chacarilla.",
+      "horarios": {
+        "lunes": null,
+        "martes": {
+          "id": "D2-S017",
+          "dia": "martes",
+          "dia_nombre": "Martes",
+          "dia_indice": 1,
+          "camion": "SIM-C02",
+          "inicio": "08:00",
+          "fin": "11:00"
+        },
+        "miercoles": null,
+        "jueves": {
+          "id": "D2-S043",
+          "dia": "jueves",
+          "dia_nombre": "Jueves",
+          "dia_indice": 3,
+          "camion": "SIM-C02",
+          "inicio": "08:00",
+          "fin": "11:00"
+        },
+        "viernes": null,
+        "sabado": {
+          "id": "D2-S085",
+          "dia": "sabado",
+          "dia_nombre": "Sábado",
+          "dia_indice": 5,
+          "camion": "SIM-C09",
+          "inicio": "08:00",
+          "fin": "11:00"
+        },
+        "domingo": {
+          "id": "D2-S095",
+          "dia": "domingo",
+          "dia_nombre": "Domingo",
+          "dia_indice": 6,
+          "camion": "SIM-C03",
+          "inicio": "15:00",
+          "fin": "18:00"
+        }
+      },
+      "dias_recoleccion": [
+        "martes",
+        "jueves",
+        "sabado",
+        "domingo"
+      ],
+      "frecuencia_semanal": 4
+    },
+    {
+      "id": "D2-B10",
+      "nombre": "Conavi",
+      "uv": 41,
+      "fila_origen": 6,
+      "nombre_mapa": "Conavi",
+      "referencia_fuente": "Página impresa 15, cuadro 2, bloque 2, fila 1",
+      "observacion_fuente": null,
+      "horarios": {
+        "lunes": null,
+        "martes": {
+          "id": "D2-S018",
+          "dia": "martes",
+          "dia_nombre": "Martes",
+          "dia_indice": 1,
+          "camion": "SIM-C02",
+          "inicio": "11:30",
+          "fin": "14:30"
+        },
+        "miercoles": null,
+        "jueves": {
+          "id": "D2-S044",
+          "dia": "jueves",
+          "dia_nombre": "Jueves",
+          "dia_indice": 3,
+          "camion": "SIM-C02",
+          "inicio": "11:30",
+          "fin": "14:30"
+        },
+        "viernes": null,
+        "sabado": {
+          "id": "D2-S086",
+          "dia": "sabado",
+          "dia_nombre": "Sábado",
+          "dia_indice": 5,
+          "camion": "SIM-C09",
+          "inicio": "11:30",
+          "fin": "14:30"
+        },
+        "domingo": {
+          "id": "D2-S096",
+          "dia": "domingo",
+          "dia_nombre": "Domingo",
+          "dia_indice": 6,
+          "camion": "SIM-C04",
+          "inicio": "15:00",
+          "fin": "18:00"
+        }
+      },
+      "dias_recoleccion": [
+        "martes",
+        "jueves",
+        "sabado",
+        "domingo"
+      ],
+      "frecuencia_semanal": 4
+    },
+    {
+      "id": "D2-B12",
+      "nombre": "Coop. La Belgica",
+      "uv": 42,
+      "fila_origen": 7,
+      "nombre_mapa": "Cooperativa La Bélgica",
+      "referencia_fuente": "Página impresa 15, cuadro 2, bloque 2, fila 3",
+      "observacion_fuente": "Abreviatura de la tabla; nombre extendido en el mapa.",
+      "horarios": {
+        "lunes": null,
+        "martes": {
+          "id": "D2-S016",
+          "dia": "martes",
+          "dia_nombre": "Martes",
+          "dia_indice": 1,
+          "camion": "SIM-C01",
+          "inicio": "15:00",
+          "fin": "18:00"
+        },
+        "miercoles": null,
+        "jueves": {
+          "id": "D2-S042",
+          "dia": "jueves",
+          "dia_nombre": "Jueves",
+          "dia_indice": 3,
+          "camion": "SIM-C01",
+          "inicio": "15:00",
+          "fin": "18:00"
+        },
+        "viernes": null,
+        "sabado": {
+          "id": "D2-S084",
+          "dia": "sabado",
+          "dia_nombre": "Sábado",
+          "dia_indice": 5,
+          "camion": "SIM-C08",
+          "inicio": "15:00",
+          "fin": "18:00"
+        },
+        "domingo": {
+          "id": "D2-S094",
+          "dia": "domingo",
+          "dia_nombre": "Domingo",
+          "dia_indice": 6,
+          "camion": "SIM-C02",
+          "inicio": "15:00",
+          "fin": "18:00"
+        }
+      },
+      "dias_recoleccion": [
+        "martes",
+        "jueves",
+        "sabado",
+        "domingo"
+      ],
+      "frecuencia_semanal": 4
+    },
+    {
+      "id": "D2-B14",
+      "nombre": "Ende",
+      "uv": 22,
+      "fila_origen": 8,
+      "nombre_mapa": "Ende",
+      "referencia_fuente": "Página impresa 15, cuadro 2, bloque 2, fila 5",
+      "observacion_fuente": null,
+      "horarios": {
+        "lunes": {
+          "id": "D2-S014",
+          "dia": "lunes",
+          "dia_nombre": "Lunes",
+          "dia_indice": 0,
+          "camion": "SIM-C07",
+          "inicio": "11:30",
+          "fin": "14:30"
+        },
+        "martes": null,
+        "miercoles": {
+          "id": "D2-S040",
+          "dia": "miercoles",
+          "dia_nombre": "Miércoles",
+          "dia_indice": 2,
+          "camion": "SIM-C07",
+          "inicio": "11:30",
+          "fin": "14:30"
+        },
+        "jueves": null,
+        "viernes": {
+          "id": "D2-S066",
+          "dia": "viernes",
+          "dia_nombre": "Viernes",
+          "dia_indice": 4,
+          "camion": "SIM-C07",
+          "inicio": "11:30",
+          "fin": "14:30"
+        },
+        "sabado": {
+          "id": "D2-S082",
+          "dia": "sabado",
+          "dia_nombre": "Sábado",
+          "dia_indice": 5,
+          "camion": "SIM-C07",
+          "inicio": "11:30",
+          "fin": "14:30"
+        },
+        "domingo": null
+      },
+      "dias_recoleccion": [
+        "lunes",
+        "miercoles",
+        "viernes",
+        "sabado"
+      ],
+      "frecuencia_semanal": 4
+    },
+    {
+      "id": "D2-B25",
+      "nombre": "Fleig",
+      "uv": 16,
+      "fila_origen": 9,
+      "nombre_mapa": "Felig",
+      "referencia_fuente": "Página impresa 15, cuadro 2, bloque 3, fila 7",
+      "observacion_fuente": "La tabla y el rótulo interior dicen FLEIG; la leyenda del mapa dice Felig.",
+      "horarios": {
+        "lunes": {
+          "id": "D2-S004",
+          "dia": "lunes",
+          "dia_nombre": "Lunes",
+          "dia_indice": 0,
+          "camion": "SIM-C02",
+          "inicio": "15:00",
+          "fin": "18:00"
+        },
+        "martes": null,
+        "miercoles": {
+          "id": "D2-S030",
+          "dia": "miercoles",
+          "dia_nombre": "Miércoles",
+          "dia_indice": 2,
+          "camion": "SIM-C02",
+          "inicio": "15:00",
+          "fin": "18:00"
+        },
+        "jueves": null,
+        "viernes": {
+          "id": "D2-S056",
+          "dia": "viernes",
+          "dia_nombre": "Viernes",
+          "dia_indice": 4,
+          "camion": "SIM-C02",
+          "inicio": "15:00",
+          "fin": "18:00"
+        },
+        "sabado": {
+          "id": "D2-S069",
+          "dia": "sabado",
+          "dia_nombre": "Sábado",
+          "dia_indice": 5,
+          "camion": "SIM-C01",
+          "inicio": "15:00",
+          "fin": "18:00"
+        },
+        "domingo": null
+      },
+      "dias_recoleccion": [
+        "lunes",
+        "miercoles",
+        "viernes",
+        "sabado"
+      ],
+      "frecuencia_semanal": 4
+    },
+    {
+      "id": "D2-B08",
+      "nombre": "Gil Reyes",
+      "uv": 40,
+      "fila_origen": 10,
+      "nombre_mapa": "Gil Reyes",
+      "referencia_fuente": "Página impresa 15, cuadro 2, bloque 1, fila 8",
+      "observacion_fuente": null,
+      "horarios": {
+        "lunes": null,
+        "martes": {
+          "id": "D2-S020",
+          "dia": "martes",
+          "dia_nombre": "Martes",
+          "dia_indice": 1,
+          "camion": "SIM-C03",
+          "inicio": "15:00",
+          "fin": "18:00"
+        },
+        "miercoles": null,
+        "jueves": {
+          "id": "D2-S046",
+          "dia": "jueves",
+          "dia_nombre": "Jueves",
+          "dia_indice": 3,
+          "camion": "SIM-C03",
+          "inicio": "15:00",
+          "fin": "18:00"
+        },
+        "viernes": null,
+        "sabado": {
+          "id": "D2-S088",
+          "dia": "sabado",
+          "dia_nombre": "Sábado",
+          "dia_indice": 5,
+          "camion": "SIM-C10",
+          "inicio": "15:00",
+          "fin": "18:00"
+        },
+        "domingo": {
+          "id": "D2-S098",
+          "dia": "domingo",
+          "dia_nombre": "Domingo",
+          "dia_indice": 6,
+          "camion": "SIM-C06",
+          "inicio": "15:00",
+          "fin": "18:00"
+        }
+      },
+      "dias_recoleccion": [
+        "martes",
+        "jueves",
+        "sabado",
+        "domingo"
+      ],
+      "frecuencia_semanal": 4
+    },
+    {
+      "id": "D2-B22",
+      "nombre": "Grigota",
+      "uv": 17,
+      "fila_origen": 11,
+      "nombre_mapa": "Grigota",
+      "referencia_fuente": "Página impresa 15, cuadro 2, bloque 3, fila 4",
+      "observacion_fuente": null,
+      "horarios": {
+        "lunes": {
+          "id": "D2-S007",
+          "dia": "lunes",
+          "dia_nombre": "Lunes",
+          "dia_indice": 0,
+          "camion": "SIM-C04",
+          "inicio": "11:30",
+          "fin": "14:30"
+        },
+        "martes": null,
+        "miercoles": {
+          "id": "D2-S033",
+          "dia": "miercoles",
+          "dia_nombre": "Miércoles",
+          "dia_indice": 2,
+          "camion": "SIM-C04",
+          "inicio": "11:30",
+          "fin": "14:30"
+        },
+        "jueves": null,
+        "viernes": {
+          "id": "D2-S059",
+          "dia": "viernes",
+          "dia_nombre": "Viernes",
+          "dia_indice": 4,
+          "camion": "SIM-C04",
+          "inicio": "11:30",
+          "fin": "14:30"
+        },
+        "sabado": {
+          "id": "D2-S075",
+          "dia": "sabado",
+          "dia_nombre": "Sábado",
+          "dia_indice": 5,
+          "camion": "SIM-C04",
+          "inicio": "11:30",
+          "fin": "14:30"
+        },
+        "domingo": null
+      },
+      "dias_recoleccion": [
+        "lunes",
+        "miercoles",
+        "viernes",
+        "sabado"
+      ],
+      "frecuencia_semanal": 4
+    },
+    {
+      "id": "D2-B20",
+      "nombre": "Gualberto Villaroel",
+      "uv": 19,
+      "fila_origen": 12,
+      "nombre_mapa": "Gualberto Villarroel",
+      "referencia_fuente": "Página impresa 15, cuadro 2, bloque 3, fila 2",
+      "observacion_fuente": "La tabla usa VILLAROEL; la leyenda del mapa usa Villarroel.",
+      "horarios": {
+        "lunes": {
+          "id": "D2-S010",
+          "dia": "lunes",
+          "dia_nombre": "Lunes",
+          "dia_indice": 0,
+          "camion": "SIM-C05",
+          "inicio": "11:30",
+          "fin": "14:30"
+        },
+        "martes": null,
+        "miercoles": {
+          "id": "D2-S036",
+          "dia": "miercoles",
+          "dia_nombre": "Miércoles",
+          "dia_indice": 2,
+          "camion": "SIM-C05",
+          "inicio": "11:30",
+          "fin": "14:30"
+        },
+        "jueves": null,
+        "viernes": {
+          "id": "D2-S062",
+          "dia": "viernes",
+          "dia_nombre": "Viernes",
+          "dia_indice": 4,
+          "camion": "SIM-C05",
+          "inicio": "11:30",
+          "fin": "14:30"
+        },
+        "sabado": {
+          "id": "D2-S078",
+          "dia": "sabado",
+          "dia_nombre": "Sábado",
+          "dia_indice": 5,
+          "camion": "SIM-C05",
+          "inicio": "11:30",
+          "fin": "14:30"
+        },
+        "domingo": null
+      },
+      "dias_recoleccion": [
+        "lunes",
+        "miercoles",
+        "viernes",
+        "sabado"
+      ],
+      "frecuencia_semanal": 4
+    },
+    {
+      "id": "D2-B02",
+      "nombre": "Hamacas Este",
+      "uv": 38,
+      "fila_origen": 13,
+      "nombre_mapa": "Hamacas Este",
+      "referencia_fuente": "Página impresa 15, cuadro 2, bloque 1, fila 2",
+      "observacion_fuente": null,
+      "horarios": {
+        "lunes": null,
+        "martes": {
+          "id": "D2-S025",
+          "dia": "martes",
+          "dia_nombre": "Martes",
+          "dia_indice": 1,
+          "camion": "SIM-C06",
+          "inicio": "08:00",
+          "fin": "11:00"
+        },
+        "miercoles": null,
+        "jueves": {
+          "id": "D2-S051",
+          "dia": "jueves",
+          "dia_nombre": "Jueves",
+          "dia_indice": 3,
+          "camion": "SIM-C06",
+          "inicio": "08:00",
+          "fin": "11:00"
+        },
+        "viernes": null,
+        "sabado": {
+          "id": "D2-S071",
+          "dia": "sabado",
+          "dia_nombre": "Sábado",
+          "dia_indice": 5,
+          "camion": "SIM-C02",
+          "inicio": "11:30",
+          "fin": "14:30"
+        },
+        "domingo": {
+          "id": "D2-S103",
+          "dia": "domingo",
+          "dia_nombre": "Domingo",
+          "dia_indice": 6,
+          "camion": "SIM-C11",
+          "inicio": "15:00",
+          "fin": "18:00"
+        }
+      },
+      "dias_recoleccion": [
+        "martes",
+        "jueves",
+        "sabado",
+        "domingo"
+      ],
+      "frecuencia_semanal": 4
+    },
+    {
+      "id": "D2-B01",
+      "nombre": "Hamacas Perseverancia",
+      "uv": 37,
+      "fila_origen": 14,
+      "nombre_mapa": "Hamacas Perseverancia",
+      "referencia_fuente": "Página impresa 15, cuadro 2, bloque 1, fila 1",
+      "observacion_fuente": null,
+      "horarios": {
+        "lunes": null,
+        "martes": {
+          "id": "D2-S026",
+          "dia": "martes",
+          "dia_nombre": "Martes",
+          "dia_indice": 1,
+          "camion": "SIM-C06",
+          "inicio": "11:30",
+          "fin": "14:30"
+        },
+        "miercoles": null,
+        "jueves": {
+          "id": "D2-S052",
+          "dia": "jueves",
+          "dia_nombre": "Jueves",
+          "dia_indice": 3,
+          "camion": "SIM-C06",
+          "inicio": "11:30",
+          "fin": "14:30"
+        },
+        "viernes": null,
+        "sabado": {
+          "id": "D2-S072",
+          "dia": "sabado",
+          "dia_nombre": "Sábado",
+          "dia_indice": 5,
+          "camion": "SIM-C02",
+          "inicio": "15:00",
+          "fin": "18:00"
+        },
+        "domingo": {
+          "id": "D2-S104",
+          "dia": "domingo",
+          "dia_nombre": "Domingo",
+          "dia_indice": 6,
+          "camion": "SIM-C12",
+          "inicio": "15:00",
+          "fin": "18:00"
+        }
+      },
+      "dias_recoleccion": [
+        "martes",
+        "jueves",
+        "sabado",
+        "domingo"
+      ],
+      "frecuencia_semanal": 4
+    },
+    {
+      "id": "D2-B18",
+      "nombre": "La Santa Cruz",
+      "uv": 15,
+      "fila_origen": 15,
+      "nombre_mapa": "Santa Cruz",
+      "referencia_fuente": "Página impresa 15, cuadro 2, bloque 2, fila 9",
+      "observacion_fuente": "Rótulo interior La Santa Cruz y leyenda Santa Cruz.",
+      "horarios": {
+        "lunes": {
+          "id": "D2-S002",
+          "dia": "lunes",
+          "dia_nombre": "Lunes",
+          "dia_indice": 0,
+          "camion": "SIM-C01",
+          "inicio": "11:30",
+          "fin": "14:30"
+        },
+        "martes": null,
+        "miercoles": {
+          "id": "D2-S028",
+          "dia": "miercoles",
+          "dia_nombre": "Miércoles",
+          "dia_indice": 2,
+          "camion": "SIM-C01",
+          "inicio": "11:30",
+          "fin": "14:30"
+        },
+        "jueves": null,
+        "viernes": {
+          "id": "D2-S054",
+          "dia": "viernes",
+          "dia_nombre": "Viernes",
+          "dia_indice": 4,
+          "camion": "SIM-C01",
+          "inicio": "11:30",
+          "fin": "14:30"
+        },
+        "sabado": {
+          "id": "D2-S068",
+          "dia": "sabado",
+          "dia_nombre": "Sábado",
+          "dia_indice": 5,
+          "camion": "SIM-C01",
+          "inicio": "11:30",
+          "fin": "14:30"
+        },
+        "domingo": null
+      },
+      "dias_recoleccion": [
+        "lunes",
+        "miercoles",
+        "viernes",
+        "sabado"
+      ],
+      "frecuencia_semanal": 4
+    },
+    {
+      "id": "D2-B15",
+      "nombre": "Lazaretto",
+      "uv": 21,
+      "fila_origen": 16,
+      "nombre_mapa": "Lazareto",
+      "referencia_fuente": "Página impresa 15, cuadro 2, bloque 2, fila 6",
+      "observacion_fuente": "La tabla conserva dos letras t; el mapa usa una.",
+      "horarios": {
+        "lunes": {
+          "id": "D2-S013",
+          "dia": "lunes",
+          "dia_nombre": "Lunes",
+          "dia_indice": 0,
+          "camion": "SIM-C07",
+          "inicio": "08:00",
+          "fin": "11:00"
+        },
+        "martes": null,
+        "miercoles": {
+          "id": "D2-S039",
+          "dia": "miercoles",
+          "dia_nombre": "Miércoles",
+          "dia_indice": 2,
+          "camion": "SIM-C07",
+          "inicio": "08:00",
+          "fin": "11:00"
+        },
+        "jueves": null,
+        "viernes": {
+          "id": "D2-S065",
+          "dia": "viernes",
+          "dia_nombre": "Viernes",
+          "dia_indice": 4,
+          "camion": "SIM-C07",
+          "inicio": "08:00",
+          "fin": "11:00"
+        },
+        "sabado": {
+          "id": "D2-S081",
+          "dia": "sabado",
+          "dia_nombre": "Sábado",
+          "dia_indice": 5,
+          "camion": "SIM-C07",
+          "inicio": "08:00",
+          "fin": "11:00"
+        },
+        "domingo": null
+      },
+      "dias_recoleccion": [
+        "lunes",
+        "miercoles",
+        "viernes",
+        "sabado"
+      ],
+      "frecuencia_semanal": 4
+    },
+    {
+      "id": "D2-B21",
+      "nombre": "Los Ángeles",
+      "uv": 18,
+      "fila_origen": 18,
+      "nombre_mapa": "Los Ángeles",
+      "referencia_fuente": "Página impresa 15, cuadro 2, bloque 3, fila 3",
+      "observacion_fuente": null,
+      "horarios": {
+        "lunes": {
+          "id": "D2-S008",
+          "dia": "lunes",
+          "dia_nombre": "Lunes",
+          "dia_indice": 0,
+          "camion": "SIM-C04",
+          "inicio": "15:00",
+          "fin": "18:00"
+        },
+        "martes": null,
+        "miercoles": {
+          "id": "D2-S034",
+          "dia": "miercoles",
+          "dia_nombre": "Miércoles",
+          "dia_indice": 2,
+          "camion": "SIM-C04",
+          "inicio": "15:00",
+          "fin": "18:00"
+        },
+        "jueves": null,
+        "viernes": {
+          "id": "D2-S060",
+          "dia": "viernes",
+          "dia_nombre": "Viernes",
+          "dia_indice": 4,
+          "camion": "SIM-C04",
+          "inicio": "15:00",
+          "fin": "18:00"
+        },
+        "sabado": {
+          "id": "D2-S076",
+          "dia": "sabado",
+          "dia_nombre": "Sábado",
+          "dia_indice": 5,
+          "camion": "SIM-C04",
+          "inicio": "15:00",
+          "fin": "18:00"
+        },
+        "domingo": null
+      },
+      "dias_recoleccion": [
+        "lunes",
+        "miercoles",
+        "viernes",
+        "sabado"
+      ],
+      "frecuencia_semanal": 4
+    },
+    {
+      "id": "D2-B23",
+      "nombre": "Los Tusequis",
+      "uv": 17,
+      "fila_origen": 17,
+      "nombre_mapa": "Los Tusequis",
+      "referencia_fuente": "Página impresa 15, cuadro 2, bloque 3, fila 5",
+      "observacion_fuente": null,
+      "horarios": {
+        "lunes": {
+          "id": "D2-S006",
+          "dia": "lunes",
+          "dia_nombre": "Lunes",
+          "dia_indice": 0,
+          "camion": "SIM-C03",
+          "inicio": "11:30",
+          "fin": "14:30"
+        },
+        "martes": null,
+        "miercoles": {
+          "id": "D2-S032",
+          "dia": "miercoles",
+          "dia_nombre": "Miércoles",
+          "dia_indice": 2,
+          "camion": "SIM-C03",
+          "inicio": "11:30",
+          "fin": "14:30"
+        },
+        "jueves": null,
+        "viernes": {
+          "id": "D2-S058",
+          "dia": "viernes",
+          "dia_nombre": "Viernes",
+          "dia_indice": 4,
+          "camion": "SIM-C03",
+          "inicio": "11:30",
+          "fin": "14:30"
+        },
+        "sabado": {
+          "id": "D2-S074",
+          "dia": "sabado",
+          "dia_nombre": "Sábado",
+          "dia_indice": 5,
+          "camion": "SIM-C03",
+          "inicio": "11:30",
+          "fin": "14:30"
+        },
+        "domingo": null
+      },
+      "dias_recoleccion": [
+        "lunes",
+        "miercoles",
+        "viernes",
+        "sabado"
+      ],
+      "frecuencia_semanal": 4
+    },
+    {
+      "id": "D2-B26",
+      "nombre": "Maestros Urbanos",
+      "uv": 16,
+      "fila_origen": 19,
+      "nombre_mapa": "Maestros Urbanos",
+      "referencia_fuente": "Página impresa 15, cuadro 2, bloque 3, fila 8",
+      "observacion_fuente": null,
+      "horarios": {
+        "lunes": {
+          "id": "D2-S003",
+          "dia": "lunes",
+          "dia_nombre": "Lunes",
+          "dia_indice": 0,
+          "camion": "SIM-C02",
+          "inicio": "11:30",
+          "fin": "14:30"
+        },
+        "martes": null,
+        "miercoles": {
+          "id": "D2-S029",
+          "dia": "miercoles",
+          "dia_nombre": "Miércoles",
+          "dia_indice": 2,
+          "camion": "SIM-C02",
+          "inicio": "11:30",
+          "fin": "14:30"
+        },
+        "jueves": null,
+        "viernes": {
+          "id": "D2-S055",
+          "dia": "viernes",
+          "dia_nombre": "Viernes",
+          "dia_indice": 4,
+          "camion": "SIM-C02",
+          "inicio": "11:30",
+          "fin": "14:30"
+        },
+        "sabado": {
+          "id": "D2-S070",
+          "dia": "sabado",
+          "dia_nombre": "Sábado",
+          "dia_indice": 5,
+          "camion": "SIM-C02",
+          "inicio": "08:00",
+          "fin": "11:00"
+        },
+        "domingo": null
+      },
+      "dias_recoleccion": [
+        "lunes",
+        "miercoles",
+        "viernes",
+        "sabado"
+      ],
+      "frecuencia_semanal": 4
+    },
+    {
+      "id": "D2-B06",
+      "nombre": "Magisterio",
+      "uv": 40,
+      "fila_origen": 20,
+      "nombre_mapa": "Magisterio",
+      "referencia_fuente": "Página impresa 15, cuadro 2, bloque 1, fila 6",
+      "observacion_fuente": null,
+      "horarios": {
+        "lunes": null,
+        "martes": {
+          "id": "D2-S021",
+          "dia": "martes",
+          "dia_nombre": "Martes",
+          "dia_indice": 1,
+          "camion": "SIM-C04",
+          "inicio": "08:00",
+          "fin": "11:00"
+        },
+        "miercoles": null,
+        "jueves": {
+          "id": "D2-S047",
+          "dia": "jueves",
+          "dia_nombre": "Jueves",
+          "dia_indice": 3,
+          "camion": "SIM-C04",
+          "inicio": "08:00",
+          "fin": "11:00"
+        },
+        "viernes": null,
+        "sabado": {
+          "id": "D2-S089",
+          "dia": "sabado",
+          "dia_nombre": "Sábado",
+          "dia_indice": 5,
+          "camion": "SIM-C11",
+          "inicio": "08:00",
+          "fin": "11:00"
+        },
+        "domingo": {
+          "id": "D2-S099",
+          "dia": "domingo",
+          "dia_nombre": "Domingo",
+          "dia_indice": 6,
+          "camion": "SIM-C07",
+          "inicio": "15:00",
+          "fin": "18:00"
+        }
+      },
+      "dias_recoleccion": [
+        "martes",
+        "jueves",
+        "sabado",
+        "domingo"
+      ],
+      "frecuencia_semanal": 4
+    },
+    {
+      "id": "D2-B07",
+      "nombre": "Nueva América",
+      "uv": 40,
+      "fila_origen": 21,
+      "nombre_mapa": "Nueva América",
+      "referencia_fuente": "Página impresa 15, cuadro 2, bloque 1, fila 7",
+      "observacion_fuente": null,
+      "horarios": {
+        "lunes": null,
+        "martes": {
+          "id": "D2-S019",
+          "dia": "martes",
+          "dia_nombre": "Martes",
+          "dia_indice": 1,
+          "camion": "SIM-C03",
+          "inicio": "11:30",
+          "fin": "14:30"
+        },
+        "miercoles": null,
+        "jueves": {
+          "id": "D2-S045",
+          "dia": "jueves",
+          "dia_nombre": "Jueves",
+          "dia_indice": 3,
+          "camion": "SIM-C03",
+          "inicio": "11:30",
+          "fin": "14:30"
+        },
+        "viernes": null,
+        "sabado": {
+          "id": "D2-S087",
+          "dia": "sabado",
+          "dia_nombre": "Sábado",
+          "dia_indice": 5,
+          "camion": "SIM-C10",
+          "inicio": "11:30",
+          "fin": "14:30"
+        },
+        "domingo": {
+          "id": "D2-S097",
+          "dia": "domingo",
+          "dia_nombre": "Domingo",
+          "dia_indice": 6,
+          "camion": "SIM-C05",
+          "inicio": "15:00",
+          "fin": "18:00"
+        }
+      },
+      "dias_recoleccion": [
+        "martes",
+        "jueves",
+        "sabado",
+        "domingo"
+      ],
+      "frecuencia_semanal": 4
+    },
+    {
+      "id": "D2-B24",
+      "nombre": "Petrolero Norte",
+      "uv": 16,
+      "fila_origen": 22,
+      "nombre_mapa": "Petrolero Norte",
+      "referencia_fuente": "Página impresa 15, cuadro 2, bloque 3, fila 6",
+      "observacion_fuente": null,
+      "horarios": {
+        "lunes": {
+          "id": "D2-S005",
+          "dia": "lunes",
+          "dia_nombre": "Lunes",
+          "dia_indice": 0,
+          "camion": "SIM-C03",
+          "inicio": "08:00",
+          "fin": "11:00"
+        },
+        "martes": null,
+        "miercoles": {
+          "id": "D2-S031",
+          "dia": "miercoles",
+          "dia_nombre": "Miércoles",
+          "dia_indice": 2,
+          "camion": "SIM-C03",
+          "inicio": "08:00",
+          "fin": "11:00"
+        },
+        "jueves": null,
+        "viernes": {
+          "id": "D2-S057",
+          "dia": "viernes",
+          "dia_nombre": "Viernes",
+          "dia_indice": 4,
+          "camion": "SIM-C03",
+          "inicio": "08:00",
+          "fin": "11:00"
+        },
+        "sabado": {
+          "id": "D2-S073",
+          "dia": "sabado",
+          "dia_nombre": "Sábado",
+          "dia_indice": 5,
+          "camion": "SIM-C03",
+          "inicio": "08:00",
+          "fin": "11:00"
+        },
+        "domingo": null
+      },
+      "dias_recoleccion": [
+        "lunes",
+        "miercoles",
+        "viernes",
+        "sabado"
+      ],
+      "frecuencia_semanal": 4
+    },
+    {
+      "id": "D2-B19",
+      "nombre": "Regimiento Braval",
+      "uv": 19,
+      "fila_origen": 23,
+      "nombre_mapa": "Regimiento Braval",
+      "referencia_fuente": "Página impresa 15, cuadro 2, bloque 3, fila 1",
+      "observacion_fuente": null,
+      "horarios": {
+        "lunes": {
+          "id": "D2-S009",
+          "dia": "lunes",
+          "dia_nombre": "Lunes",
+          "dia_indice": 0,
+          "camion": "SIM-C05",
+          "inicio": "08:00",
+          "fin": "11:00"
+        },
+        "martes": null,
+        "miercoles": {
+          "id": "D2-S035",
+          "dia": "miercoles",
+          "dia_nombre": "Miércoles",
+          "dia_indice": 2,
+          "camion": "SIM-C05",
+          "inicio": "08:00",
+          "fin": "11:00"
+        },
+        "jueves": null,
+        "viernes": {
+          "id": "D2-S061",
+          "dia": "viernes",
+          "dia_nombre": "Viernes",
+          "dia_indice": 4,
+          "camion": "SIM-C05",
+          "inicio": "08:00",
+          "fin": "11:00"
+        },
+        "sabado": {
+          "id": "D2-S077",
+          "dia": "sabado",
+          "dia_nombre": "Sábado",
+          "dia_indice": 5,
+          "camion": "SIM-C05",
+          "inicio": "08:00",
+          "fin": "11:00"
+        },
+        "domingo": null
+      },
+      "dias_recoleccion": [
+        "lunes",
+        "miercoles",
+        "viernes",
+        "sabado"
+      ],
+      "frecuencia_semanal": 4
+    },
+    {
+      "id": "D2-B16",
+      "nombre": "San Jose Obrero",
+      "uv": 20,
+      "fila_origen": 24,
+      "nombre_mapa": "San Jose Obrero",
+      "referencia_fuente": "Página impresa 15, cuadro 2, bloque 2, fila 7",
+      "observacion_fuente": null,
+      "horarios": {
+        "lunes": {
+          "id": "D2-S012",
+          "dia": "lunes",
+          "dia_nombre": "Lunes",
+          "dia_indice": 0,
+          "camion": "SIM-C06",
+          "inicio": "15:00",
+          "fin": "18:00"
+        },
+        "martes": null,
+        "miercoles": {
+          "id": "D2-S038",
+          "dia": "miercoles",
+          "dia_nombre": "Miércoles",
+          "dia_indice": 2,
+          "camion": "SIM-C06",
+          "inicio": "15:00",
+          "fin": "18:00"
+        },
+        "jueves": null,
+        "viernes": {
+          "id": "D2-S064",
+          "dia": "viernes",
+          "dia_nombre": "Viernes",
+          "dia_indice": 4,
+          "camion": "SIM-C06",
+          "inicio": "15:00",
+          "fin": "18:00"
+        },
+        "sabado": {
+          "id": "D2-S080",
+          "dia": "sabado",
+          "dia_nombre": "Sábado",
+          "dia_indice": 5,
+          "camion": "SIM-C06",
+          "inicio": "15:00",
+          "fin": "18:00"
+        },
+        "domingo": null
+      },
+      "dias_recoleccion": [
+        "lunes",
+        "miercoles",
+        "viernes",
+        "sabado"
+      ],
+      "frecuencia_semanal": 4
+    },
+    {
+      "id": "D2-B17",
+      "nombre": "San Juan De La Chacarilla",
+      "uv": 19,
+      "fila_origen": 25,
+      "nombre_mapa": "San Juan De La Chacarilla",
+      "referencia_fuente": "Página impresa 15, cuadro 2, bloque 2, fila 8",
+      "observacion_fuente": null,
+      "horarios": {
+        "lunes": {
+          "id": "D2-S011",
+          "dia": "lunes",
+          "dia_nombre": "Lunes",
+          "dia_indice": 0,
+          "camion": "SIM-C06",
+          "inicio": "11:30",
+          "fin": "14:30"
+        },
+        "martes": null,
+        "miercoles": {
+          "id": "D2-S037",
+          "dia": "miercoles",
+          "dia_nombre": "Miércoles",
+          "dia_indice": 2,
+          "camion": "SIM-C06",
+          "inicio": "11:30",
+          "fin": "14:30"
+        },
+        "jueves": null,
+        "viernes": {
+          "id": "D2-S063",
+          "dia": "viernes",
+          "dia_nombre": "Viernes",
+          "dia_indice": 4,
+          "camion": "SIM-C06",
+          "inicio": "11:30",
+          "fin": "14:30"
+        },
+        "sabado": {
+          "id": "D2-S079",
+          "dia": "sabado",
+          "dia_nombre": "Sábado",
+          "dia_indice": 5,
+          "camion": "SIM-C06",
+          "inicio": "11:30",
+          "fin": "14:30"
+        },
+        "domingo": null
+      },
+      "dias_recoleccion": [
+        "lunes",
+        "miercoles",
+        "viernes",
+        "sabado"
+      ],
+      "frecuencia_semanal": 4
+    },
+    {
+      "id": "D2-B05",
+      "nombre": "San Juan Macias",
+      "uv": 39,
+      "fila_origen": 26,
+      "nombre_mapa": "San Juan Macias",
+      "referencia_fuente": "Página impresa 15, cuadro 2, bloque 1, fila 5",
+      "observacion_fuente": null,
+      "horarios": {
+        "lunes": null,
+        "martes": {
+          "id": "D2-S022",
+          "dia": "martes",
+          "dia_nombre": "Martes",
+          "dia_indice": 1,
+          "camion": "SIM-C04",
+          "inicio": "11:30",
+          "fin": "14:30"
+        },
+        "miercoles": null,
+        "jueves": {
+          "id": "D2-S048",
+          "dia": "jueves",
+          "dia_nombre": "Jueves",
+          "dia_indice": 3,
+          "camion": "SIM-C04",
+          "inicio": "11:30",
+          "fin": "14:30"
+        },
+        "viernes": null,
+        "sabado": {
+          "id": "D2-S090",
+          "dia": "sabado",
+          "dia_nombre": "Sábado",
+          "dia_indice": 5,
+          "camion": "SIM-C11",
+          "inicio": "11:30",
+          "fin": "14:30"
+        },
+        "domingo": {
+          "id": "D2-S100",
+          "dia": "domingo",
+          "dia_nombre": "Domingo",
+          "dia_indice": 6,
+          "camion": "SIM-C08",
+          "inicio": "15:00",
+          "fin": "18:00"
+        }
+      },
+      "dias_recoleccion": [
+        "martes",
+        "jueves",
+        "sabado",
+        "domingo"
+      ],
+      "frecuencia_semanal": 4
+    },
+    {
+      "id": "D2-B09",
+      "nombre": "Santa Clara",
+      "uv": 15,
+      "fila_origen": 27,
+      "nombre_mapa": "Santa Clara",
+      "referencia_fuente": "Página impresa 15, cuadro 2, bloque 1, fila 9",
+      "observacion_fuente": null,
+      "horarios": {
+        "lunes": {
+          "id": "D2-S001",
+          "dia": "lunes",
+          "dia_nombre": "Lunes",
+          "dia_indice": 0,
+          "camion": "SIM-C01",
+          "inicio": "08:00",
+          "fin": "11:00"
+        },
+        "martes": null,
+        "miercoles": {
+          "id": "D2-S027",
+          "dia": "miercoles",
+          "dia_nombre": "Miércoles",
+          "dia_indice": 2,
+          "camion": "SIM-C01",
+          "inicio": "08:00",
+          "fin": "11:00"
+        },
+        "jueves": null,
+        "viernes": {
+          "id": "D2-S053",
+          "dia": "viernes",
+          "dia_nombre": "Viernes",
+          "dia_indice": 4,
+          "camion": "SIM-C01",
+          "inicio": "08:00",
+          "fin": "11:00"
+        },
+        "sabado": {
+          "id": "D2-S067",
+          "dia": "sabado",
+          "dia_nombre": "Sábado",
+          "dia_indice": 5,
+          "camion": "SIM-C01",
+          "inicio": "08:00",
+          "fin": "11:00"
+        },
+        "domingo": null
+      },
+      "dias_recoleccion": [
+        "lunes",
+        "miercoles",
+        "viernes",
+        "sabado"
+      ],
+      "frecuencia_semanal": 4
+    },
+    {
+      "id": "D2-B03",
+      "nombre": "Santa Rosa",
+      "uv": 39,
+      "fila_origen": 28,
+      "nombre_mapa": "Santa Rosa de la Mina",
+      "referencia_fuente": "Página impresa 15, cuadro 2, bloque 1, fila 3",
+      "observacion_fuente": "La tabla abrevia el nombre del mapa.",
+      "horarios": {
+        "lunes": null,
+        "martes": {
+          "id": "D2-S024",
+          "dia": "martes",
+          "dia_nombre": "Martes",
+          "dia_indice": 1,
+          "camion": "SIM-C05",
+          "inicio": "15:00",
+          "fin": "18:00"
+        },
+        "miercoles": null,
+        "jueves": {
+          "id": "D2-S050",
+          "dia": "jueves",
+          "dia_nombre": "Jueves",
+          "dia_indice": 3,
+          "camion": "SIM-C05",
+          "inicio": "15:00",
+          "fin": "18:00"
+        },
+        "viernes": null,
+        "sabado": {
+          "id": "D2-S092",
+          "dia": "sabado",
+          "dia_nombre": "Sábado",
+          "dia_indice": 5,
+          "camion": "SIM-C12",
+          "inicio": "15:00",
+          "fin": "18:00"
+        },
+        "domingo": {
+          "id": "D2-S102",
+          "dia": "domingo",
+          "dia_nombre": "Domingo",
+          "dia_indice": 6,
+          "camion": "SIM-C10",
+          "inicio": "15:00",
+          "fin": "18:00"
+        }
+      },
+      "dias_recoleccion": [
+        "martes",
+        "jueves",
+        "sabado",
+        "domingo"
+      ],
+      "frecuencia_semanal": 4
+    },
+    {
+      "id": "D2-B13",
+      "nombre": "Totai",
+      "uv": 43,
+      "fila_origen": 29,
+      "nombre_mapa": "Totai",
+      "referencia_fuente": "Página impresa 15, cuadro 2, bloque 2, fila 4",
+      "observacion_fuente": null,
+      "horarios": {
+        "lunes": null,
+        "martes": {
+          "id": "D2-S015",
+          "dia": "martes",
+          "dia_nombre": "Martes",
+          "dia_indice": 1,
+          "camion": "SIM-C01",
+          "inicio": "11:30",
+          "fin": "14:30"
+        },
+        "miercoles": null,
+        "jueves": {
+          "id": "D2-S041",
+          "dia": "jueves",
+          "dia_nombre": "Jueves",
+          "dia_indice": 3,
+          "camion": "SIM-C01",
+          "inicio": "11:30",
+          "fin": "14:30"
+        },
+        "viernes": null,
+        "sabado": {
+          "id": "D2-S083",
+          "dia": "sabado",
+          "dia_nombre": "Sábado",
+          "dia_indice": 5,
+          "camion": "SIM-C08",
+          "inicio": "11:30",
+          "fin": "14:30"
+        },
+        "domingo": {
+          "id": "D2-S093",
+          "dia": "domingo",
+          "dia_nombre": "Domingo",
+          "dia_indice": 6,
+          "camion": "SIM-C01",
+          "inicio": "15:00",
+          "fin": "18:00"
+        }
+      },
+      "dias_recoleccion": [
+        "martes",
+        "jueves",
+        "sabado",
+        "domingo"
+      ],
+      "frecuencia_semanal": 4
+    },
+    {
+      "id": "D2-B04",
+      "nombre": "Villa Pillin",
+      "uv": 39,
+      "fila_origen": 30,
+      "nombre_mapa": "Villa Pillin",
+      "referencia_fuente": "Página impresa 15, cuadro 2, bloque 1, fila 4",
+      "observacion_fuente": null,
+      "horarios": {
+        "lunes": null,
+        "martes": {
+          "id": "D2-S023",
+          "dia": "martes",
+          "dia_nombre": "Martes",
+          "dia_indice": 1,
+          "camion": "SIM-C05",
+          "inicio": "11:30",
+          "fin": "14:30"
+        },
+        "miercoles": null,
+        "jueves": {
+          "id": "D2-S049",
+          "dia": "jueves",
+          "dia_nombre": "Jueves",
+          "dia_indice": 3,
+          "camion": "SIM-C05",
+          "inicio": "11:30",
+          "fin": "14:30"
+        },
+        "viernes": null,
+        "sabado": {
+          "id": "D2-S091",
+          "dia": "sabado",
+          "dia_nombre": "Sábado",
+          "dia_indice": 5,
+          "camion": "SIM-C12",
+          "inicio": "11:30",
+          "fin": "14:30"
+        },
+        "domingo": {
+          "id": "D2-S101",
+          "dia": "domingo",
+          "dia_nombre": "Domingo",
+          "dia_indice": 6,
+          "camion": "SIM-C09",
+          "inicio": "15:00",
+          "fin": "18:00"
+        }
+      },
+      "dias_recoleccion": [
+        "martes",
+        "jueves",
+        "sabado",
+        "domingo"
+      ],
+      "frecuencia_semanal": 4
+    }
+  ],
+  "servicios": [
+    {
+      "id": "D2-S001",
+      "dia": "lunes",
+      "dia_nombre": "Lunes",
+      "dia_indice": 0,
+      "barrio_id": "D2-B09",
+      "camion": "SIM-C01",
+      "inicio": "08:00",
+      "fin": "11:00",
+      "orden_camion": 1,
+      "fila_origen": 5
+    },
+    {
+      "id": "D2-S002",
+      "dia": "lunes",
+      "dia_nombre": "Lunes",
+      "dia_indice": 0,
+      "barrio_id": "D2-B18",
+      "camion": "SIM-C01",
+      "inicio": "11:30",
+      "fin": "14:30",
+      "orden_camion": 2,
+      "fila_origen": 6
+    },
+    {
+      "id": "D2-S003",
+      "dia": "lunes",
+      "dia_nombre": "Lunes",
+      "dia_indice": 0,
+      "barrio_id": "D2-B26",
+      "camion": "SIM-C02",
+      "inicio": "11:30",
+      "fin": "14:30",
+      "orden_camion": 1,
+      "fila_origen": 7
+    },
+    {
+      "id": "D2-S004",
+      "dia": "lunes",
+      "dia_nombre": "Lunes",
+      "dia_indice": 0,
+      "barrio_id": "D2-B25",
+      "camion": "SIM-C02",
+      "inicio": "15:00",
+      "fin": "18:00",
+      "orden_camion": 2,
+      "fila_origen": 8
+    },
+    {
+      "id": "D2-S005",
+      "dia": "lunes",
+      "dia_nombre": "Lunes",
+      "dia_indice": 0,
+      "barrio_id": "D2-B24",
+      "camion": "SIM-C03",
+      "inicio": "08:00",
+      "fin": "11:00",
+      "orden_camion": 1,
+      "fila_origen": 9
+    },
+    {
+      "id": "D2-S006",
+      "dia": "lunes",
+      "dia_nombre": "Lunes",
+      "dia_indice": 0,
+      "barrio_id": "D2-B23",
+      "camion": "SIM-C03",
+      "inicio": "11:30",
+      "fin": "14:30",
+      "orden_camion": 2,
+      "fila_origen": 10
+    },
+    {
+      "id": "D2-S007",
+      "dia": "lunes",
+      "dia_nombre": "Lunes",
+      "dia_indice": 0,
+      "barrio_id": "D2-B22",
+      "camion": "SIM-C04",
+      "inicio": "11:30",
+      "fin": "14:30",
+      "orden_camion": 1,
+      "fila_origen": 11
+    },
+    {
+      "id": "D2-S008",
+      "dia": "lunes",
+      "dia_nombre": "Lunes",
+      "dia_indice": 0,
+      "barrio_id": "D2-B21",
+      "camion": "SIM-C04",
+      "inicio": "15:00",
+      "fin": "18:00",
+      "orden_camion": 2,
+      "fila_origen": 12
+    },
+    {
+      "id": "D2-S009",
+      "dia": "lunes",
+      "dia_nombre": "Lunes",
+      "dia_indice": 0,
+      "barrio_id": "D2-B19",
+      "camion": "SIM-C05",
+      "inicio": "08:00",
+      "fin": "11:00",
+      "orden_camion": 1,
+      "fila_origen": 13
+    },
+    {
+      "id": "D2-S010",
+      "dia": "lunes",
+      "dia_nombre": "Lunes",
+      "dia_indice": 0,
+      "barrio_id": "D2-B20",
+      "camion": "SIM-C05",
+      "inicio": "11:30",
+      "fin": "14:30",
+      "orden_camion": 2,
+      "fila_origen": 14
+    },
+    {
+      "id": "D2-S011",
+      "dia": "lunes",
+      "dia_nombre": "Lunes",
+      "dia_indice": 0,
+      "barrio_id": "D2-B17",
+      "camion": "SIM-C06",
+      "inicio": "11:30",
+      "fin": "14:30",
+      "orden_camion": 1,
+      "fila_origen": 15
+    },
+    {
+      "id": "D2-S012",
+      "dia": "lunes",
+      "dia_nombre": "Lunes",
+      "dia_indice": 0,
+      "barrio_id": "D2-B16",
+      "camion": "SIM-C06",
+      "inicio": "15:00",
+      "fin": "18:00",
+      "orden_camion": 2,
+      "fila_origen": 16
+    },
+    {
+      "id": "D2-S013",
+      "dia": "lunes",
+      "dia_nombre": "Lunes",
+      "dia_indice": 0,
+      "barrio_id": "D2-B15",
+      "camion": "SIM-C07",
+      "inicio": "08:00",
+      "fin": "11:00",
+      "orden_camion": 1,
+      "fila_origen": 17
+    },
+    {
+      "id": "D2-S014",
+      "dia": "lunes",
+      "dia_nombre": "Lunes",
+      "dia_indice": 0,
+      "barrio_id": "D2-B14",
+      "camion": "SIM-C07",
+      "inicio": "11:30",
+      "fin": "14:30",
+      "orden_camion": 2,
+      "fila_origen": 18
+    },
+    {
+      "id": "D2-S015",
+      "dia": "martes",
+      "dia_nombre": "Martes",
+      "dia_indice": 1,
+      "barrio_id": "D2-B13",
+      "camion": "SIM-C01",
+      "inicio": "11:30",
+      "fin": "14:30",
+      "orden_camion": 1,
+      "fila_origen": 19
+    },
+    {
+      "id": "D2-S016",
+      "dia": "martes",
+      "dia_nombre": "Martes",
+      "dia_indice": 1,
+      "barrio_id": "D2-B12",
+      "camion": "SIM-C01",
+      "inicio": "15:00",
+      "fin": "18:00",
+      "orden_camion": 2,
+      "fila_origen": 20
+    },
+    {
+      "id": "D2-S017",
+      "dia": "martes",
+      "dia_nombre": "Martes",
+      "dia_indice": 1,
+      "barrio_id": "D2-B11",
+      "camion": "SIM-C02",
+      "inicio": "08:00",
+      "fin": "11:00",
+      "orden_camion": 1,
+      "fila_origen": 21
+    },
+    {
+      "id": "D2-S018",
+      "dia": "martes",
+      "dia_nombre": "Martes",
+      "dia_indice": 1,
+      "barrio_id": "D2-B10",
+      "camion": "SIM-C02",
+      "inicio": "11:30",
+      "fin": "14:30",
+      "orden_camion": 2,
+      "fila_origen": 22
+    },
+    {
+      "id": "D2-S019",
+      "dia": "martes",
+      "dia_nombre": "Martes",
+      "dia_indice": 1,
+      "barrio_id": "D2-B07",
+      "camion": "SIM-C03",
+      "inicio": "11:30",
+      "fin": "14:30",
+      "orden_camion": 1,
+      "fila_origen": 23
+    },
+    {
+      "id": "D2-S020",
+      "dia": "martes",
+      "dia_nombre": "Martes",
+      "dia_indice": 1,
+      "barrio_id": "D2-B08",
+      "camion": "SIM-C03",
+      "inicio": "15:00",
+      "fin": "18:00",
+      "orden_camion": 2,
+      "fila_origen": 24
+    },
+    {
+      "id": "D2-S021",
+      "dia": "martes",
+      "dia_nombre": "Martes",
+      "dia_indice": 1,
+      "barrio_id": "D2-B06",
+      "camion": "SIM-C04",
+      "inicio": "08:00",
+      "fin": "11:00",
+      "orden_camion": 1,
+      "fila_origen": 25
+    },
+    {
+      "id": "D2-S022",
+      "dia": "martes",
+      "dia_nombre": "Martes",
+      "dia_indice": 1,
+      "barrio_id": "D2-B05",
+      "camion": "SIM-C04",
+      "inicio": "11:30",
+      "fin": "14:30",
+      "orden_camion": 2,
+      "fila_origen": 26
+    },
+    {
+      "id": "D2-S023",
+      "dia": "martes",
+      "dia_nombre": "Martes",
+      "dia_indice": 1,
+      "barrio_id": "D2-B04",
+      "camion": "SIM-C05",
+      "inicio": "11:30",
+      "fin": "14:30",
+      "orden_camion": 1,
+      "fila_origen": 27
+    },
+    {
+      "id": "D2-S024",
+      "dia": "martes",
+      "dia_nombre": "Martes",
+      "dia_indice": 1,
+      "barrio_id": "D2-B03",
+      "camion": "SIM-C05",
+      "inicio": "15:00",
+      "fin": "18:00",
+      "orden_camion": 2,
+      "fila_origen": 28
+    },
+    {
+      "id": "D2-S025",
+      "dia": "martes",
+      "dia_nombre": "Martes",
+      "dia_indice": 1,
+      "barrio_id": "D2-B02",
+      "camion": "SIM-C06",
+      "inicio": "08:00",
+      "fin": "11:00",
+      "orden_camion": 1,
+      "fila_origen": 29
+    },
+    {
+      "id": "D2-S026",
+      "dia": "martes",
+      "dia_nombre": "Martes",
+      "dia_indice": 1,
+      "barrio_id": "D2-B01",
+      "camion": "SIM-C06",
+      "inicio": "11:30",
+      "fin": "14:30",
+      "orden_camion": 2,
+      "fila_origen": 30
+    },
+    {
+      "id": "D2-S027",
+      "dia": "miercoles",
+      "dia_nombre": "Miércoles",
+      "dia_indice": 2,
+      "barrio_id": "D2-B09",
+      "camion": "SIM-C01",
+      "inicio": "08:00",
+      "fin": "11:00",
+      "orden_camion": 1,
+      "fila_origen": 31
+    },
+    {
+      "id": "D2-S028",
+      "dia": "miercoles",
+      "dia_nombre": "Miércoles",
+      "dia_indice": 2,
+      "barrio_id": "D2-B18",
+      "camion": "SIM-C01",
+      "inicio": "11:30",
+      "fin": "14:30",
+      "orden_camion": 2,
+      "fila_origen": 32
+    },
+    {
+      "id": "D2-S029",
+      "dia": "miercoles",
+      "dia_nombre": "Miércoles",
+      "dia_indice": 2,
+      "barrio_id": "D2-B26",
+      "camion": "SIM-C02",
+      "inicio": "11:30",
+      "fin": "14:30",
+      "orden_camion": 1,
+      "fila_origen": 33
+    },
+    {
+      "id": "D2-S030",
+      "dia": "miercoles",
+      "dia_nombre": "Miércoles",
+      "dia_indice": 2,
+      "barrio_id": "D2-B25",
+      "camion": "SIM-C02",
+      "inicio": "15:00",
+      "fin": "18:00",
+      "orden_camion": 2,
+      "fila_origen": 34
+    },
+    {
+      "id": "D2-S031",
+      "dia": "miercoles",
+      "dia_nombre": "Miércoles",
+      "dia_indice": 2,
+      "barrio_id": "D2-B24",
+      "camion": "SIM-C03",
+      "inicio": "08:00",
+      "fin": "11:00",
+      "orden_camion": 1,
+      "fila_origen": 35
+    },
+    {
+      "id": "D2-S032",
+      "dia": "miercoles",
+      "dia_nombre": "Miércoles",
+      "dia_indice": 2,
+      "barrio_id": "D2-B23",
+      "camion": "SIM-C03",
+      "inicio": "11:30",
+      "fin": "14:30",
+      "orden_camion": 2,
+      "fila_origen": 36
+    },
+    {
+      "id": "D2-S033",
+      "dia": "miercoles",
+      "dia_nombre": "Miércoles",
+      "dia_indice": 2,
+      "barrio_id": "D2-B22",
+      "camion": "SIM-C04",
+      "inicio": "11:30",
+      "fin": "14:30",
+      "orden_camion": 1,
+      "fila_origen": 37
+    },
+    {
+      "id": "D2-S034",
+      "dia": "miercoles",
+      "dia_nombre": "Miércoles",
+      "dia_indice": 2,
+      "barrio_id": "D2-B21",
+      "camion": "SIM-C04",
+      "inicio": "15:00",
+      "fin": "18:00",
+      "orden_camion": 2,
+      "fila_origen": 38
+    },
+    {
+      "id": "D2-S035",
+      "dia": "miercoles",
+      "dia_nombre": "Miércoles",
+      "dia_indice": 2,
+      "barrio_id": "D2-B19",
+      "camion": "SIM-C05",
+      "inicio": "08:00",
+      "fin": "11:00",
+      "orden_camion": 1,
+      "fila_origen": 39
+    },
+    {
+      "id": "D2-S036",
+      "dia": "miercoles",
+      "dia_nombre": "Miércoles",
+      "dia_indice": 2,
+      "barrio_id": "D2-B20",
+      "camion": "SIM-C05",
+      "inicio": "11:30",
+      "fin": "14:30",
+      "orden_camion": 2,
+      "fila_origen": 40
+    },
+    {
+      "id": "D2-S037",
+      "dia": "miercoles",
+      "dia_nombre": "Miércoles",
+      "dia_indice": 2,
+      "barrio_id": "D2-B17",
+      "camion": "SIM-C06",
+      "inicio": "11:30",
+      "fin": "14:30",
+      "orden_camion": 1,
+      "fila_origen": 41
+    },
+    {
+      "id": "D2-S038",
+      "dia": "miercoles",
+      "dia_nombre": "Miércoles",
+      "dia_indice": 2,
+      "barrio_id": "D2-B16",
+      "camion": "SIM-C06",
+      "inicio": "15:00",
+      "fin": "18:00",
+      "orden_camion": 2,
+      "fila_origen": 42
+    },
+    {
+      "id": "D2-S039",
+      "dia": "miercoles",
+      "dia_nombre": "Miércoles",
+      "dia_indice": 2,
+      "barrio_id": "D2-B15",
+      "camion": "SIM-C07",
+      "inicio": "08:00",
+      "fin": "11:00",
+      "orden_camion": 1,
+      "fila_origen": 43
+    },
+    {
+      "id": "D2-S040",
+      "dia": "miercoles",
+      "dia_nombre": "Miércoles",
+      "dia_indice": 2,
+      "barrio_id": "D2-B14",
+      "camion": "SIM-C07",
+      "inicio": "11:30",
+      "fin": "14:30",
+      "orden_camion": 2,
+      "fila_origen": 44
+    },
+    {
+      "id": "D2-S041",
+      "dia": "jueves",
+      "dia_nombre": "Jueves",
+      "dia_indice": 3,
+      "barrio_id": "D2-B13",
+      "camion": "SIM-C01",
+      "inicio": "11:30",
+      "fin": "14:30",
+      "orden_camion": 1,
+      "fila_origen": 45
+    },
+    {
+      "id": "D2-S042",
+      "dia": "jueves",
+      "dia_nombre": "Jueves",
+      "dia_indice": 3,
+      "barrio_id": "D2-B12",
+      "camion": "SIM-C01",
+      "inicio": "15:00",
+      "fin": "18:00",
+      "orden_camion": 2,
+      "fila_origen": 46
+    },
+    {
+      "id": "D2-S043",
+      "dia": "jueves",
+      "dia_nombre": "Jueves",
+      "dia_indice": 3,
+      "barrio_id": "D2-B11",
+      "camion": "SIM-C02",
+      "inicio": "08:00",
+      "fin": "11:00",
+      "orden_camion": 1,
+      "fila_origen": 47
+    },
+    {
+      "id": "D2-S044",
+      "dia": "jueves",
+      "dia_nombre": "Jueves",
+      "dia_indice": 3,
+      "barrio_id": "D2-B10",
+      "camion": "SIM-C02",
+      "inicio": "11:30",
+      "fin": "14:30",
+      "orden_camion": 2,
+      "fila_origen": 48
+    },
+    {
+      "id": "D2-S045",
+      "dia": "jueves",
+      "dia_nombre": "Jueves",
+      "dia_indice": 3,
+      "barrio_id": "D2-B07",
+      "camion": "SIM-C03",
+      "inicio": "11:30",
+      "fin": "14:30",
+      "orden_camion": 1,
+      "fila_origen": 49
+    },
+    {
+      "id": "D2-S046",
+      "dia": "jueves",
+      "dia_nombre": "Jueves",
+      "dia_indice": 3,
+      "barrio_id": "D2-B08",
+      "camion": "SIM-C03",
+      "inicio": "15:00",
+      "fin": "18:00",
+      "orden_camion": 2,
+      "fila_origen": 50
+    },
+    {
+      "id": "D2-S047",
+      "dia": "jueves",
+      "dia_nombre": "Jueves",
+      "dia_indice": 3,
+      "barrio_id": "D2-B06",
+      "camion": "SIM-C04",
+      "inicio": "08:00",
+      "fin": "11:00",
+      "orden_camion": 1,
+      "fila_origen": 51
+    },
+    {
+      "id": "D2-S048",
+      "dia": "jueves",
+      "dia_nombre": "Jueves",
+      "dia_indice": 3,
+      "barrio_id": "D2-B05",
+      "camion": "SIM-C04",
+      "inicio": "11:30",
+      "fin": "14:30",
+      "orden_camion": 2,
+      "fila_origen": 52
+    },
+    {
+      "id": "D2-S049",
+      "dia": "jueves",
+      "dia_nombre": "Jueves",
+      "dia_indice": 3,
+      "barrio_id": "D2-B04",
+      "camion": "SIM-C05",
+      "inicio": "11:30",
+      "fin": "14:30",
+      "orden_camion": 1,
+      "fila_origen": 53
+    },
+    {
+      "id": "D2-S050",
+      "dia": "jueves",
+      "dia_nombre": "Jueves",
+      "dia_indice": 3,
+      "barrio_id": "D2-B03",
+      "camion": "SIM-C05",
+      "inicio": "15:00",
+      "fin": "18:00",
+      "orden_camion": 2,
+      "fila_origen": 54
+    },
+    {
+      "id": "D2-S051",
+      "dia": "jueves",
+      "dia_nombre": "Jueves",
+      "dia_indice": 3,
+      "barrio_id": "D2-B02",
+      "camion": "SIM-C06",
+      "inicio": "08:00",
+      "fin": "11:00",
+      "orden_camion": 1,
+      "fila_origen": 55
+    },
+    {
+      "id": "D2-S052",
+      "dia": "jueves",
+      "dia_nombre": "Jueves",
+      "dia_indice": 3,
+      "barrio_id": "D2-B01",
+      "camion": "SIM-C06",
+      "inicio": "11:30",
+      "fin": "14:30",
+      "orden_camion": 2,
+      "fila_origen": 56
+    },
+    {
+      "id": "D2-S053",
+      "dia": "viernes",
+      "dia_nombre": "Viernes",
+      "dia_indice": 4,
+      "barrio_id": "D2-B09",
+      "camion": "SIM-C01",
+      "inicio": "08:00",
+      "fin": "11:00",
+      "orden_camion": 1,
+      "fila_origen": 57
+    },
+    {
+      "id": "D2-S054",
+      "dia": "viernes",
+      "dia_nombre": "Viernes",
+      "dia_indice": 4,
+      "barrio_id": "D2-B18",
+      "camion": "SIM-C01",
+      "inicio": "11:30",
+      "fin": "14:30",
+      "orden_camion": 2,
+      "fila_origen": 58
+    },
+    {
+      "id": "D2-S055",
+      "dia": "viernes",
+      "dia_nombre": "Viernes",
+      "dia_indice": 4,
+      "barrio_id": "D2-B26",
+      "camion": "SIM-C02",
+      "inicio": "11:30",
+      "fin": "14:30",
+      "orden_camion": 1,
+      "fila_origen": 59
+    },
+    {
+      "id": "D2-S056",
+      "dia": "viernes",
+      "dia_nombre": "Viernes",
+      "dia_indice": 4,
+      "barrio_id": "D2-B25",
+      "camion": "SIM-C02",
+      "inicio": "15:00",
+      "fin": "18:00",
+      "orden_camion": 2,
+      "fila_origen": 60
+    },
+    {
+      "id": "D2-S057",
+      "dia": "viernes",
+      "dia_nombre": "Viernes",
+      "dia_indice": 4,
+      "barrio_id": "D2-B24",
+      "camion": "SIM-C03",
+      "inicio": "08:00",
+      "fin": "11:00",
+      "orden_camion": 1,
+      "fila_origen": 61
+    },
+    {
+      "id": "D2-S058",
+      "dia": "viernes",
+      "dia_nombre": "Viernes",
+      "dia_indice": 4,
+      "barrio_id": "D2-B23",
+      "camion": "SIM-C03",
+      "inicio": "11:30",
+      "fin": "14:30",
+      "orden_camion": 2,
+      "fila_origen": 62
+    },
+    {
+      "id": "D2-S059",
+      "dia": "viernes",
+      "dia_nombre": "Viernes",
+      "dia_indice": 4,
+      "barrio_id": "D2-B22",
+      "camion": "SIM-C04",
+      "inicio": "11:30",
+      "fin": "14:30",
+      "orden_camion": 1,
+      "fila_origen": 63
+    },
+    {
+      "id": "D2-S060",
+      "dia": "viernes",
+      "dia_nombre": "Viernes",
+      "dia_indice": 4,
+      "barrio_id": "D2-B21",
+      "camion": "SIM-C04",
+      "inicio": "15:00",
+      "fin": "18:00",
+      "orden_camion": 2,
+      "fila_origen": 64
+    },
+    {
+      "id": "D2-S061",
+      "dia": "viernes",
+      "dia_nombre": "Viernes",
+      "dia_indice": 4,
+      "barrio_id": "D2-B19",
+      "camion": "SIM-C05",
+      "inicio": "08:00",
+      "fin": "11:00",
+      "orden_camion": 1,
+      "fila_origen": 65
+    },
+    {
+      "id": "D2-S062",
+      "dia": "viernes",
+      "dia_nombre": "Viernes",
+      "dia_indice": 4,
+      "barrio_id": "D2-B20",
+      "camion": "SIM-C05",
+      "inicio": "11:30",
+      "fin": "14:30",
+      "orden_camion": 2,
+      "fila_origen": 66
+    },
+    {
+      "id": "D2-S063",
+      "dia": "viernes",
+      "dia_nombre": "Viernes",
+      "dia_indice": 4,
+      "barrio_id": "D2-B17",
+      "camion": "SIM-C06",
+      "inicio": "11:30",
+      "fin": "14:30",
+      "orden_camion": 1,
+      "fila_origen": 67
+    },
+    {
+      "id": "D2-S064",
+      "dia": "viernes",
+      "dia_nombre": "Viernes",
+      "dia_indice": 4,
+      "barrio_id": "D2-B16",
+      "camion": "SIM-C06",
+      "inicio": "15:00",
+      "fin": "18:00",
+      "orden_camion": 2,
+      "fila_origen": 68
+    },
+    {
+      "id": "D2-S065",
+      "dia": "viernes",
+      "dia_nombre": "Viernes",
+      "dia_indice": 4,
+      "barrio_id": "D2-B15",
+      "camion": "SIM-C07",
+      "inicio": "08:00",
+      "fin": "11:00",
+      "orden_camion": 1,
+      "fila_origen": 69
+    },
+    {
+      "id": "D2-S066",
+      "dia": "viernes",
+      "dia_nombre": "Viernes",
+      "dia_indice": 4,
+      "barrio_id": "D2-B14",
+      "camion": "SIM-C07",
+      "inicio": "11:30",
+      "fin": "14:30",
+      "orden_camion": 2,
+      "fila_origen": 70
+    },
+    {
+      "id": "D2-S067",
+      "dia": "sabado",
+      "dia_nombre": "Sábado",
+      "dia_indice": 5,
+      "barrio_id": "D2-B09",
+      "camion": "SIM-C01",
+      "inicio": "08:00",
+      "fin": "11:00",
+      "orden_camion": 1,
+      "fila_origen": 71
+    },
+    {
+      "id": "D2-S068",
+      "dia": "sabado",
+      "dia_nombre": "Sábado",
+      "dia_indice": 5,
+      "barrio_id": "D2-B18",
+      "camion": "SIM-C01",
+      "inicio": "11:30",
+      "fin": "14:30",
+      "orden_camion": 2,
+      "fila_origen": 72
+    },
+    {
+      "id": "D2-S069",
+      "dia": "sabado",
+      "dia_nombre": "Sábado",
+      "dia_indice": 5,
+      "barrio_id": "D2-B25",
+      "camion": "SIM-C01",
+      "inicio": "15:00",
+      "fin": "18:00",
+      "orden_camion": 3,
+      "fila_origen": 73
+    },
+    {
+      "id": "D2-S070",
+      "dia": "sabado",
+      "dia_nombre": "Sábado",
+      "dia_indice": 5,
+      "barrio_id": "D2-B26",
+      "camion": "SIM-C02",
+      "inicio": "08:00",
+      "fin": "11:00",
+      "orden_camion": 1,
+      "fila_origen": 74
+    },
+    {
+      "id": "D2-S071",
+      "dia": "sabado",
+      "dia_nombre": "Sábado",
+      "dia_indice": 5,
+      "barrio_id": "D2-B02",
+      "camion": "SIM-C02",
+      "inicio": "11:30",
+      "fin": "14:30",
+      "orden_camion": 2,
+      "fila_origen": 75
+    },
+    {
+      "id": "D2-S072",
+      "dia": "sabado",
+      "dia_nombre": "Sábado",
+      "dia_indice": 5,
+      "barrio_id": "D2-B01",
+      "camion": "SIM-C02",
+      "inicio": "15:00",
+      "fin": "18:00",
+      "orden_camion": 3,
+      "fila_origen": 76
+    },
+    {
+      "id": "D2-S073",
+      "dia": "sabado",
+      "dia_nombre": "Sábado",
+      "dia_indice": 5,
+      "barrio_id": "D2-B24",
+      "camion": "SIM-C03",
+      "inicio": "08:00",
+      "fin": "11:00",
+      "orden_camion": 1,
+      "fila_origen": 77
+    },
+    {
+      "id": "D2-S074",
+      "dia": "sabado",
+      "dia_nombre": "Sábado",
+      "dia_indice": 5,
+      "barrio_id": "D2-B23",
+      "camion": "SIM-C03",
+      "inicio": "11:30",
+      "fin": "14:30",
+      "orden_camion": 2,
+      "fila_origen": 78
+    },
+    {
+      "id": "D2-S075",
+      "dia": "sabado",
+      "dia_nombre": "Sábado",
+      "dia_indice": 5,
+      "barrio_id": "D2-B22",
+      "camion": "SIM-C04",
+      "inicio": "11:30",
+      "fin": "14:30",
+      "orden_camion": 1,
+      "fila_origen": 79
+    },
+    {
+      "id": "D2-S076",
+      "dia": "sabado",
+      "dia_nombre": "Sábado",
+      "dia_indice": 5,
+      "barrio_id": "D2-B21",
+      "camion": "SIM-C04",
+      "inicio": "15:00",
+      "fin": "18:00",
+      "orden_camion": 2,
+      "fila_origen": 80
+    },
+    {
+      "id": "D2-S077",
+      "dia": "sabado",
+      "dia_nombre": "Sábado",
+      "dia_indice": 5,
+      "barrio_id": "D2-B19",
+      "camion": "SIM-C05",
+      "inicio": "08:00",
+      "fin": "11:00",
+      "orden_camion": 1,
+      "fila_origen": 81
+    },
+    {
+      "id": "D2-S078",
+      "dia": "sabado",
+      "dia_nombre": "Sábado",
+      "dia_indice": 5,
+      "barrio_id": "D2-B20",
+      "camion": "SIM-C05",
+      "inicio": "11:30",
+      "fin": "14:30",
+      "orden_camion": 2,
+      "fila_origen": 82
+    },
+    {
+      "id": "D2-S079",
+      "dia": "sabado",
+      "dia_nombre": "Sábado",
+      "dia_indice": 5,
+      "barrio_id": "D2-B17",
+      "camion": "SIM-C06",
+      "inicio": "11:30",
+      "fin": "14:30",
+      "orden_camion": 1,
+      "fila_origen": 83
+    },
+    {
+      "id": "D2-S080",
+      "dia": "sabado",
+      "dia_nombre": "Sábado",
+      "dia_indice": 5,
+      "barrio_id": "D2-B16",
+      "camion": "SIM-C06",
+      "inicio": "15:00",
+      "fin": "18:00",
+      "orden_camion": 2,
+      "fila_origen": 84
+    },
+    {
+      "id": "D2-S081",
+      "dia": "sabado",
+      "dia_nombre": "Sábado",
+      "dia_indice": 5,
+      "barrio_id": "D2-B15",
+      "camion": "SIM-C07",
+      "inicio": "08:00",
+      "fin": "11:00",
+      "orden_camion": 1,
+      "fila_origen": 85
+    },
+    {
+      "id": "D2-S082",
+      "dia": "sabado",
+      "dia_nombre": "Sábado",
+      "dia_indice": 5,
+      "barrio_id": "D2-B14",
+      "camion": "SIM-C07",
+      "inicio": "11:30",
+      "fin": "14:30",
+      "orden_camion": 2,
+      "fila_origen": 86
+    },
+    {
+      "id": "D2-S083",
+      "dia": "sabado",
+      "dia_nombre": "Sábado",
+      "dia_indice": 5,
+      "barrio_id": "D2-B13",
+      "camion": "SIM-C08",
+      "inicio": "11:30",
+      "fin": "14:30",
+      "orden_camion": 1,
+      "fila_origen": 87
+    },
+    {
+      "id": "D2-S084",
+      "dia": "sabado",
+      "dia_nombre": "Sábado",
+      "dia_indice": 5,
+      "barrio_id": "D2-B12",
+      "camion": "SIM-C08",
+      "inicio": "15:00",
+      "fin": "18:00",
+      "orden_camion": 2,
+      "fila_origen": 88
+    },
+    {
+      "id": "D2-S085",
+      "dia": "sabado",
+      "dia_nombre": "Sábado",
+      "dia_indice": 5,
+      "barrio_id": "D2-B11",
+      "camion": "SIM-C09",
+      "inicio": "08:00",
+      "fin": "11:00",
+      "orden_camion": 1,
+      "fila_origen": 89
+    },
+    {
+      "id": "D2-S086",
+      "dia": "sabado",
+      "dia_nombre": "Sábado",
+      "dia_indice": 5,
+      "barrio_id": "D2-B10",
+      "camion": "SIM-C09",
+      "inicio": "11:30",
+      "fin": "14:30",
+      "orden_camion": 2,
+      "fila_origen": 90
+    },
+    {
+      "id": "D2-S087",
+      "dia": "sabado",
+      "dia_nombre": "Sábado",
+      "dia_indice": 5,
+      "barrio_id": "D2-B07",
+      "camion": "SIM-C10",
+      "inicio": "11:30",
+      "fin": "14:30",
+      "orden_camion": 1,
+      "fila_origen": 91
+    },
+    {
+      "id": "D2-S088",
+      "dia": "sabado",
+      "dia_nombre": "Sábado",
+      "dia_indice": 5,
+      "barrio_id": "D2-B08",
+      "camion": "SIM-C10",
+      "inicio": "15:00",
+      "fin": "18:00",
+      "orden_camion": 2,
+      "fila_origen": 92
+    },
+    {
+      "id": "D2-S089",
+      "dia": "sabado",
+      "dia_nombre": "Sábado",
+      "dia_indice": 5,
+      "barrio_id": "D2-B06",
+      "camion": "SIM-C11",
+      "inicio": "08:00",
+      "fin": "11:00",
+      "orden_camion": 1,
+      "fila_origen": 93
+    },
+    {
+      "id": "D2-S090",
+      "dia": "sabado",
+      "dia_nombre": "Sábado",
+      "dia_indice": 5,
+      "barrio_id": "D2-B05",
+      "camion": "SIM-C11",
+      "inicio": "11:30",
+      "fin": "14:30",
+      "orden_camion": 2,
+      "fila_origen": 94
+    },
+    {
+      "id": "D2-S091",
+      "dia": "sabado",
+      "dia_nombre": "Sábado",
+      "dia_indice": 5,
+      "barrio_id": "D2-B04",
+      "camion": "SIM-C12",
+      "inicio": "11:30",
+      "fin": "14:30",
+      "orden_camion": 1,
+      "fila_origen": 95
+    },
+    {
+      "id": "D2-S092",
+      "dia": "sabado",
+      "dia_nombre": "Sábado",
+      "dia_indice": 5,
+      "barrio_id": "D2-B03",
+      "camion": "SIM-C12",
+      "inicio": "15:00",
+      "fin": "18:00",
+      "orden_camion": 2,
+      "fila_origen": 96
+    },
+    {
+      "id": "D2-S093",
+      "dia": "domingo",
+      "dia_nombre": "Domingo",
+      "dia_indice": 6,
+      "barrio_id": "D2-B13",
+      "camion": "SIM-C01",
+      "inicio": "15:00",
+      "fin": "18:00",
+      "orden_camion": 1,
+      "fila_origen": 97
+    },
+    {
+      "id": "D2-S094",
+      "dia": "domingo",
+      "dia_nombre": "Domingo",
+      "dia_indice": 6,
+      "barrio_id": "D2-B12",
+      "camion": "SIM-C02",
+      "inicio": "15:00",
+      "fin": "18:00",
+      "orden_camion": 1,
+      "fila_origen": 98
+    },
+    {
+      "id": "D2-S095",
+      "dia": "domingo",
+      "dia_nombre": "Domingo",
+      "dia_indice": 6,
+      "barrio_id": "D2-B11",
+      "camion": "SIM-C03",
+      "inicio": "15:00",
+      "fin": "18:00",
+      "orden_camion": 1,
+      "fila_origen": 99
+    },
+    {
+      "id": "D2-S096",
+      "dia": "domingo",
+      "dia_nombre": "Domingo",
+      "dia_indice": 6,
+      "barrio_id": "D2-B10",
+      "camion": "SIM-C04",
+      "inicio": "15:00",
+      "fin": "18:00",
+      "orden_camion": 1,
+      "fila_origen": 100
+    },
+    {
+      "id": "D2-S097",
+      "dia": "domingo",
+      "dia_nombre": "Domingo",
+      "dia_indice": 6,
+      "barrio_id": "D2-B07",
+      "camion": "SIM-C05",
+      "inicio": "15:00",
+      "fin": "18:00",
+      "orden_camion": 1,
+      "fila_origen": 101
+    },
+    {
+      "id": "D2-S098",
+      "dia": "domingo",
+      "dia_nombre": "Domingo",
+      "dia_indice": 6,
+      "barrio_id": "D2-B08",
+      "camion": "SIM-C06",
+      "inicio": "15:00",
+      "fin": "18:00",
+      "orden_camion": 1,
+      "fila_origen": 102
+    },
+    {
+      "id": "D2-S099",
+      "dia": "domingo",
+      "dia_nombre": "Domingo",
+      "dia_indice": 6,
+      "barrio_id": "D2-B06",
+      "camion": "SIM-C07",
+      "inicio": "15:00",
+      "fin": "18:00",
+      "orden_camion": 1,
+      "fila_origen": 103
+    },
+    {
+      "id": "D2-S100",
+      "dia": "domingo",
+      "dia_nombre": "Domingo",
+      "dia_indice": 6,
+      "barrio_id": "D2-B05",
+      "camion": "SIM-C08",
+      "inicio": "15:00",
+      "fin": "18:00",
+      "orden_camion": 1,
+      "fila_origen": 104
+    },
+    {
+      "id": "D2-S101",
+      "dia": "domingo",
+      "dia_nombre": "Domingo",
+      "dia_indice": 6,
+      "barrio_id": "D2-B04",
+      "camion": "SIM-C09",
+      "inicio": "15:00",
+      "fin": "18:00",
+      "orden_camion": 1,
+      "fila_origen": 105
+    },
+    {
+      "id": "D2-S102",
+      "dia": "domingo",
+      "dia_nombre": "Domingo",
+      "dia_indice": 6,
+      "barrio_id": "D2-B03",
+      "camion": "SIM-C10",
+      "inicio": "15:00",
+      "fin": "18:00",
+      "orden_camion": 1,
+      "fila_origen": 106
+    },
+    {
+      "id": "D2-S103",
+      "dia": "domingo",
+      "dia_nombre": "Domingo",
+      "dia_indice": 6,
+      "barrio_id": "D2-B02",
+      "camion": "SIM-C11",
+      "inicio": "15:00",
+      "fin": "18:00",
+      "orden_camion": 1,
+      "fila_origen": 107
+    },
+    {
+      "id": "D2-S104",
+      "dia": "domingo",
+      "dia_nombre": "Domingo",
+      "dia_indice": 6,
+      "barrio_id": "D2-B01",
+      "camion": "SIM-C12",
+      "inicio": "15:00",
+      "fin": "18:00",
+      "orden_camion": 1,
+      "fila_origen": 108
+    }
+  ]
+}

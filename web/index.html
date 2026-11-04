@@ -3,131 +3,70 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      name="description"
-      content="Prototipo local para consultar las frecuencias publicadas de recolección por zona."
-    />
-    <title>Alerta Ruta – EMACRUZ</title>
+    <meta name="description" content="Alerta Ruta: consulta académica de horarios simulados e incidencias manuales del Distrito Municipal N.º 2." />
+    <meta name="theme-color" content="#075f4b" />
+    <title>Alerta Ruta · Distrito Municipal N.º 2</title>
     <link rel="stylesheet" href="styles.css" />
+    <script src="schedule-utils.js" defer></script>
     <script src="app.js" defer></script>
   </head>
   <body>
-    <div class="page-shell">
-      <header class="hero">
-        <div class="brand-mark" aria-hidden="true">
-          <svg viewBox="0 0 48 48" role="img">
-            <path d="M12 38c0-9 5-11 12-14s12-5 12-14" />
-            <circle cx="12" cy="38" r="4" />
-            <circle cx="36" cy="10" r="4" />
-          </svg>
+    <a class="skip-link" href="#consulta">Saltar a la consulta</a>
+    <header class="site-header">
+      <a class="brand" href="#inicio" aria-label="Alerta Ruta, inicio"><span class="brand-icon" aria-hidden="true">AR</span><span><strong>Alerta Ruta</strong><small>Distrito Municipal N.º 2</small></span></a>
+      <nav aria-label="Navegación principal"><a href="#consulta">Consulta</a><a href="#mapa">Mapa</a><a href="#informacion">Información</a></nav>
+    </header>
+
+    <main id="inicio">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy"><p class="eyebrow">Santa Cruz de la Sierra · Distrito 2</p><h1 id="hero-title">Tu próxima recolección, más fácil de consultar.</h1><p>Busca tu barrio para ver la programación académica, el camión simulado y las incidencias manuales vigentes.</p><a class="primary-button" href="#consulta">Consultar mi barrio</a></div>
+        <div class="hero-stat" aria-label="Cobertura del prototipo"><span id="barrio-count">—</span><strong>barrios</strong><small>del Distrito Municipal N.º 2</small></div>
+      </section>
+
+      <aside class="academic-notice" role="note"><span aria-hidden="true">!</span><p><strong>Simulación académica — no es un aviso oficial.</strong> Los horarios, camiones y estados son datos de demostración; no confirman la operación de EMACRUZ en tiempo real.</p></aside>
+
+      <section id="consulta" class="section consultation" aria-labelledby="consulta-title">
+        <div class="section-heading"><p class="eyebrow">Consulta vecinal</p><h2 id="consulta-title">Encuentra tu barrio</h2><p>Escribe parte del nombre o elígelo en la lista. No necesitas conocer tu unidad vecinal.</p></div>
+        <div class="search-panel">
+          <label for="barrio-search">Buscar por nombre</label>
+          <div class="search-input"><span aria-hidden="true">⌕</span><input id="barrio-search" type="search" placeholder="Ej.: Chacarrilla" autocomplete="off" disabled /></div>
+          <label for="barrio-select">Barrios disponibles</label>
+          <select id="barrio-select" disabled><option>Cargando datos…</option></select>
+          <p id="search-status" class="helper" role="status" aria-live="polite">Leyendo la base del Distrito 2…</p>
         </div>
-        <div class="hero-copy">
-          <p class="eyebrow">Prototipo EMACRUZ · Santa Cruz de la Sierra</p>
-          <h1>Alerta Ruta</h1>
-          <p class="hero-subtitle">
-            Consulta cuándo pasa el servicio de recolección por tu zona.
-          </p>
-        </div>
-        <div class="source-summary" aria-label="Resumen de datos">
-          <strong id="record-count">—</strong>
-          <span>frecuencias publicadas</span>
-        </div>
-      </header>
 
-      <main>
-        <section class="search-card" aria-labelledby="search-title">
-          <div class="search-heading">
-            <div>
-              <p class="step-label">Consulta rápida</p>
-              <h2 id="search-title">Selecciona tu zona</h2>
-            </div>
-            <span class="data-badge">Datos del Excel</span>
+        <div id="empty-state" class="empty-state"><span aria-hidden="true">↗</span><div><strong>Selecciona un barrio</strong><p>Aquí aparecerán su UV, días, horarios, camión y estado.</p></div></div>
+        <article id="result" class="result" hidden aria-live="polite">
+          <header class="result-header"><div><p id="result-id" class="eyebrow"></p><h2 id="result-name"></h2><p id="result-uv"></p></div><span class="frequency"><strong id="result-frequency">—</strong> veces por semana</span></header>
+          <section id="service-status" class="status-card status-normal" aria-labelledby="status-title">
+            <div class="status-top"><span id="status-dot" aria-hidden="true"></span><div><p class="label">Estado del servicio</p><h3 id="status-title">Normal</h3></div><span id="status-badge">NORMAL</span></div>
+            <p id="status-message" class="status-message">No hay demora prevista.</p><div id="status-details" class="status-details"></div>
+            <p id="status-disclaimer" class="status-disclaimer">Se refiere a incidencias registradas en este prototipo, no a una confirmación operativa en tiempo real.</p>
+          </section>
+          <div class="summary-grid">
+            <section class="info-card next-card"><p class="label">Próximo servicio programado</p><h3 id="next-service">—</h3><p id="next-time"></p><div><span>Camión simulado</span><strong id="next-truck">—</strong></div></section>
+            <section class="info-card"><p class="label">Cobertura</p><h3>UV <span id="coverage-uv">—</span></h3><p>Ruta operativa: no disponible en la fuente.</p><p id="map-reference"></p></section>
           </div>
+          <section class="week-card" aria-labelledby="week-title"><div><p class="label">Semana tipo</p><h3 id="week-title">Días, horarios y camiones simulados</h3></div><div id="week-grid" class="week-grid"></div></section>
+        </article>
+        <div id="load-error" class="error-panel" hidden role="alert"><strong>No se pudieron cargar los datos.</strong><p>Comprueba los JSON de <code>web/data/</code> y abre el sitio mediante un servidor HTTP.</p></div>
+      </section>
 
-          <label class="select-label" for="zone-select">Zona y área de cobertura</label>
-          <div class="select-wrap">
-            <select id="zone-select" disabled>
-              <option value="">Cargando frecuencias…</option>
-            </select>
-            <svg viewBox="0 0 20 20" aria-hidden="true">
-              <path d="m5 7.5 5 5 5-5" />
-            </svg>
-          </div>
-          <p id="load-status" class="helper-text" role="status" aria-live="polite">
-            Leyendo la información preparada desde el Excel…
-          </p>
-        </section>
+      <section id="mapa" class="section map-section" aria-labelledby="map-title">
+        <div class="section-heading split-heading"><div><p class="eyebrow">Orientación territorial</p><h2 id="map-title">Mapa de barrios del Distrito 2</h2><p id="selected-map-hint">Selecciona un barrio para ver su nombre de referencia en el mapa.</p></div><button id="open-map" class="secondary-button" type="button">Ampliar mapa</button></div>
+        <div class="map-frame"><img id="main-map" src="assets/maps/distrito-2-barrios.webp" alt="Mapa de conformación de barrios del Distrito Municipal N.º 2" /></div>
+        <div id="map-tabs" class="map-tabs" aria-label="Mapas disponibles"></div>
+        <p class="map-note">Las imágenes sirven para orientación. No contienen coordenadas, GPS ni trayectorias de los camiones.</p>
+      </section>
 
-        <section id="empty-state" class="empty-state" aria-live="polite">
-          <div class="empty-icon" aria-hidden="true">⌁</div>
-          <div>
-            <h2>Tu horario, en un solo lugar</h2>
-            <p>Elige una opción para ver días, turno y horario publicados.</p>
-          </div>
-        </section>
+      <section id="informacion" class="section information" aria-labelledby="info-title">
+        <div class="section-heading"><p class="eyebrow">Antes de usar la información</p><h2 id="info-title">Qué significa este prototipo</h2></div>
+        <div class="information-grid"><article><span>01</span><h3>Programación simulada</h3><p>Las ventanas horarias son por barrio, no horas de llegada a cada domicilio.</p></article><article><span>02</span><h3>Alertas manuales</h3><p>Una persona autorizada del equipo actualiza el archivo de incidencias y publica el cambio.</p></article><article><span>03</span><h3>Sin seguimiento en vivo</h3><p>No hay GPS, API meteorológica ni confirmación automática de recorridos.</p></article></div>
+      </section>
+    </main>
 
-        <section id="result-card" class="result-card" hidden aria-live="polite">
-          <div class="result-heading">
-            <div>
-              <p id="record-id" class="record-id"></p>
-              <h2 id="result-zone"></h2>
-              <p id="result-area" class="result-area"></p>
-            </div>
-            <span id="result-shift" class="shift-badge"></span>
-          </div>
+    <footer><div><strong>Alerta Ruta</strong><p>Prototipo universitario · Distrito Municipal N.º 2</p></div><p>Fuente: <code>Distrito_2_horarios_SIMULADOS.xlsx</code>. Vigencia operativa no acreditada.</p></footer>
 
-          <div class="details-grid">
-            <div class="detail-item">
-              <span class="detail-label">Sector</span>
-              <strong id="result-sector"></strong>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">Zona</span>
-              <strong id="result-zone-detail"></strong>
-            </div>
-            <div class="detail-item detail-wide">
-              <span class="detail-label">Área</span>
-              <strong id="result-area-detail"></strong>
-            </div>
-            <div id="district-detail" class="detail-item detail-wide">
-              <span class="detail-label">Distritos indicados</span>
-              <strong id="result-districts"></strong>
-            </div>
-          </div>
-
-          <div class="schedule-panel">
-            <div class="schedule-copy">
-              <span class="detail-label">Días de recolección</span>
-              <strong id="result-days"></strong>
-              <p id="holiday-detail" class="holiday-detail"></p>
-            </div>
-            <div id="schedule-time" class="time-grid"></div>
-          </div>
-
-          <div id="week-days" class="week-days" aria-label="Días activos de la semana"></div>
-
-          <aside id="review-note" class="review-note" hidden>
-            <span aria-hidden="true">i</span>
-            <p><strong>Nota de revisión</strong><br /><span id="review-note-text"></span></p>
-          </aside>
-        </section>
-
-        <section id="error-panel" class="error-panel" hidden role="alert">
-          <strong>No se pudieron cargar las frecuencias.</strong>
-          <p>
-            Inicia la página con un servidor local y comprueba que
-            <code>web/data/frecuencias.json</code> exista.
-          </p>
-        </section>
-      </main>
-
-      <footer>
-        <p>
-          Fuente: <strong>Base_Emacruz_sectores_y_frecuencias.xlsx</strong>, hoja
-          <strong>Frecuencias</strong>.
-        </p>
-        <p>Prototipo académico. La vigencia operativa de los horarios no está acreditada.</p>
-      </footer>
-    </div>
+    <dialog id="map-dialog" aria-labelledby="dialog-title"><div class="dialog-header"><div><p class="eyebrow">Visor de mapas</p><h2 id="dialog-title">Barrios del Distrito 2</h2></div><button id="close-map" class="icon-button" type="button" aria-label="Cerrar mapa">×</button></div><div class="zoom-controls" aria-label="Controles de ampliación"><button type="button" data-zoom="out" aria-label="Alejar">−</button><button type="button" data-zoom="reset">100%</button><button type="button" data-zoom="in" aria-label="Acercar">+</button></div><div class="dialog-map"><img id="dialog-image" src="assets/maps/distrito-2-barrios.webp" alt="Mapa ampliado del Distrito 2" /></div></dialog>
   </body>
 </html>

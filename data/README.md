@@ -1,16 +1,16 @@
-# Datos del Proyecto Integrador
+# Datos de Alerta Ruta — Distrito Municipal N.º 2
 
 ## Carpetas
 
 - `raw/`: copia de las fuentes originales autorizadas; nunca se edita manualmente.
 - `processed/`: resultados derivados con transformaciones documentadas y reproducibles.
 
-Ambas carpetas están excluidas de Git excepto sus `.gitkeep`. El ZIP no trae datos del ejemplo de minería. Los distritos, zonas, días y turnos facilitados por el contacto de EMACRUZ son una posible fuente inicial; comprueba versión, cobertura y permiso para usar y compartir cada archivo.
+La fuente vigente es `raw/distrito-2/Distrito_2_horarios_SIMULADOS.xlsx`. Se versiona porque el usuario solicitó sustituir la base anterior y publicar el prototipo, pero se conserva inmutable y claramente marcada como simulación. El exportador genera en `processed/distrito-2/` el JSON y el informe de validación; no se editan a mano.
 
-Por compatibilidad con el historial anterior, `Base_Emacruz_sectores_y_frecuencias.xlsx` permanece en la raíz de `data/` y conserva exactamente su contenido original. No se duplica ni se mueve hasta que el equipo acuerde y documente una migración.
+La base anterior `Base_Emacruz_sectores_y_frecuencias.xlsx` fue retirada de la versión actual sin reescribir el historial de Git.
 
 ## Ficha de cada fuente
 
 Antes de analizar un archivo, completar una ficha en `docs/fuentes-datos.md` con: nombre local, institución o enlace de origen, fecha de recepción, ámbito temporal y espacial, columnas, unidad de análisis, permiso, responsable y limitaciones. Los avisos de contingencia simulados deben llevar una marca visible de simulación.
 
-Una frecuencia programada **no equivale** a un recojo ejecutado ni a kilos acumulados. Para investigar acumulación se requieren observaciones adicionales o un diseño de simulación identificado como tal.
+Una frecuencia simulada **no equivale** a un recojo ejecutado ni a kilos acumulados. Para investigar acumulación se requieren observaciones reales adicionales o un diseño de simulación identificado como tal.

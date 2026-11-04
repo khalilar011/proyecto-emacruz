@@ -1,199 +1,237 @@
 "use strict";
 
-const DATA_URL = "data/frecuencias.json";
-const MISSING_VALUES = new Set([
-  "",
-  "no indicado",
-  "no indicada",
-  "no indicados",
-  "no indicadas",
-]);
+const DATA_URL = "data/distrito-2.json";
+const ALERTS_URL = "data/incidencias.json";
+const dayOrder = ["lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo"];
+const dayLabels = { lunes: "Lun", martes: "Mar", miercoles: "Mié", jueves: "Jue", viernes: "Vie", sabado: "Sáb", domingo: "Dom" };
+const stateLabels = { NORMAL: "Normal", DEMORA: "Demora", SERVICIO_SUSPENDIDO: "Servicio suspendido" };
+const utils = window.AlertaRutaSchedule;
 
-const DAY_LABELS = [
-  ["lun", "Lun"],
-  ["mar", "Mar"],
-  ["mie", "Mié"],
-  ["jue", "Jue"],
-  ["vie", "Vie"],
-  ["sab", "Sáb"],
-  ["dom", "Dom"],
-];
+const elements = Object.fromEntries(
+  [
+    "barrio-count", "barrio-search", "barrio-select", "search-status", "empty-state", "result", "result-id",
+    "result-name", "result-uv", "result-frequency", "service-status", "status-title", "status-badge", "status-message",
+    "status-details", "status-disclaimer", "next-service", "next-time", "next-truck", "coverage-uv", "map-reference",
+    "week-grid", "load-error", "selected-map-hint", "main-map", "map-tabs", "open-map", "map-dialog", "dialog-title",
+    "dialog-image", "close-map",
+  ].map((id) => [id.replaceAll("-", "_"), document.getElementById(id)]),
+);
 
-const elements = {
-  select: document.querySelector("#zone-select"),
-  loadStatus: document.querySelector("#load-status"),
-  recordCount: document.querySelector("#record-count"),
-  emptyState: document.querySelector("#empty-state"),
-  resultCard: document.querySelector("#result-card"),
-  errorPanel: document.querySelector("#error-panel"),
-  recordId: document.querySelector("#record-id"),
-  zone: document.querySelector("#result-zone"),
-  zoneDetail: document.querySelector("#result-zone-detail"),
-  area: document.querySelector("#result-area"),
-  areaDetail: document.querySelector("#result-area-detail"),
-  sector: document.querySelector("#result-sector"),
-  districts: document.querySelector("#result-districts"),
-  shift: document.querySelector("#result-shift"),
-  days: document.querySelector("#result-days"),
-  holiday: document.querySelector("#holiday-detail"),
-  time: document.querySelector("#schedule-time"),
-  weekDays: document.querySelector("#week-days"),
-  reviewNote: document.querySelector("#review-note"),
-  reviewNoteText: document.querySelector("#review-note-text"),
-};
+let barrios = [];
+let incidents = [];
+let maps = [];
+let selectedBarrio = null;
+let selectedMap = null;
+let zoom = 1;
+let alertsUpdated = null;
 
-let frequencies = [];
-
-function isMissing(value) {
-  return MISSING_VALUES.has(String(value ?? "").trim().toLowerCase());
+function formatDateTime(value) {
+  if (!value) return "No indicada";
+  return new Intl.DateTimeFormat("es-BO", {
+    timeZone: "America/La_Paz", dateStyle: "medium", timeStyle: "short",
+  }).format(new Date(value));
 }
 
-function displayValue(value) {
-  return isMissing(value) ? "No indicado" : String(value).trim();
+function escapeText(value) {
+  return String(value ?? "");
 }
 
-function buildOptionLabel(record) {
-  const qualifiers = [displayValue(record.sector)];
-  if (!isMissing(record.distritos)) {
-    qualifiers.push(displayValue(record.distritos));
-  }
-  return `${displayValue(record.zona)} — ${displayValue(record.area)} · ${qualifiers.join(
-    " · ",
-  )} (${record.id})`;
-}
-
-function createTimeItem(label, value) {
-  const wrapper = document.createElement("div");
-  wrapper.className = "time-item";
-
-  const labelElement = document.createElement("span");
-  labelElement.className = "time-label";
-  labelElement.textContent = label;
-
-  const valueElement = document.createElement("span");
-  valueElement.className = "time-value";
-  valueElement.textContent = value;
-
-  wrapper.append(labelElement, valueElement);
-  return wrapper;
-}
-
-function renderTime(record) {
-  const startMissing = isMissing(record.inicio);
-  const endMissing = isMissing(record.fin);
-  elements.time.replaceChildren();
-  elements.time.classList.toggle("single", startMissing === endMissing);
-
-  if (startMissing && endMissing) {
-    elements.time.append(createTimeItem("Horario", "No indicado"));
-    return;
-  }
-
-  if (!startMissing && !endMissing) {
-    elements.time.append(
-      createTimeItem("Horario", `${displayValue(record.inicio)} – ${displayValue(record.fin)}`),
-    );
-    return;
-  }
-
-  elements.time.append(
-    createTimeItem("Inicio", displayValue(record.inicio)),
-    createTimeItem("Fin", displayValue(record.fin)),
-  );
-}
-
-function renderWeek(record) {
-  elements.weekDays.replaceChildren();
-  for (const [key, label] of DAY_LABELS) {
-    const active = Boolean(record.dias?.[key]);
-    const day = document.createElement("div");
-    day.className = `day-pill${active ? " active" : ""}`;
-    day.setAttribute("aria-label", `${label}: ${active ? "con recolección" : "sin recolección"}`);
-
-    const dayName = document.createElement("strong");
-    dayName.textContent = label;
-    const marker = document.createElement("span");
-    marker.textContent = active ? "✓" : "";
-    day.append(dayName, marker);
-    elements.weekDays.append(day);
-  }
-}
-
-function renderRecord(record) {
-  elements.recordId.textContent = `Registro ${record.id} · fila ${record.fila_origen} del Excel`;
-  elements.zone.textContent = displayValue(record.zona);
-  elements.zoneDetail.textContent = displayValue(record.zona);
-  elements.area.textContent = displayValue(record.area);
-  elements.areaDetail.textContent = displayValue(record.area);
-  elements.sector.textContent = displayValue(record.sector);
-  elements.districts.textContent = displayValue(record.distritos);
-  elements.shift.textContent = displayValue(record.turno);
-  elements.days.textContent = displayValue(record.dias_publicados);
-  elements.holiday.textContent = `Feriados: ${displayValue(record.feriados)}`;
-
-  renderTime(record);
-  renderWeek(record);
-
-  const usefulNote = !isMissing(record.nota_revision) && record.nota_revision !== "Sin observación";
-  elements.reviewNote.hidden = !usefulNote;
-  elements.reviewNoteText.textContent = usefulNote ? record.nota_revision : "";
-
-  elements.emptyState.hidden = true;
-  elements.errorPanel.hidden = true;
-  elements.resultCard.hidden = false;
-}
-
-function populateSelect(records) {
+function populateSelect(filtered = barrios) {
   const placeholder = document.createElement("option");
   placeholder.value = "";
-  placeholder.textContent = "Elige una zona para consultar";
-  elements.select.replaceChildren(placeholder);
-
-  for (const record of records) {
+  placeholder.textContent = filtered.length ? "Elige un barrio" : "Sin coincidencias";
+  elements.barrio_select.replaceChildren(placeholder);
+  for (const barrio of filtered) {
     const option = document.createElement("option");
-    option.value = record.id;
-    option.textContent = buildOptionLabel(record);
-    elements.select.append(option);
-  }
-
-  elements.select.disabled = false;
-}
-
-async function loadFrequencies() {
-  try {
-    const response = await fetch(DATA_URL, { cache: "no-store" });
-    if (!response.ok) {
-      throw new Error(`Respuesta HTTP ${response.status}`);
-    }
-
-    const payload = await response.json();
-    if (!Array.isArray(payload.frecuencias) || payload.frecuencias.length === 0) {
-      throw new Error("El JSON no contiene frecuencias");
-    }
-
-    frequencies = payload.frecuencias;
-    populateSelect(frequencies);
-    elements.recordCount.textContent = String(frequencies.length);
-    elements.loadStatus.textContent = `${frequencies.length} opciones disponibles. Cada una corresponde a una fila del Excel.`;
-  } catch (error) {
-    console.error("No fue posible cargar las frecuencias:", error);
-    elements.select.replaceChildren();
-    elements.select.disabled = true;
-    elements.loadStatus.textContent = "La información no está disponible.";
-    elements.emptyState.hidden = true;
-    elements.resultCard.hidden = true;
-    elements.errorPanel.hidden = false;
+    option.value = barrio.id;
+    option.textContent = `${barrio.nombre} · UV ${barrio.uv}`;
+    elements.barrio_select.append(option);
   }
 }
 
-elements.select.addEventListener("change", (event) => {
-  const record = frequencies.find((item) => item.id === event.target.value);
-  if (record) {
-    renderRecord(record);
+function filterBarrios() {
+  showEmpty();
+  const query = utils.normalizeText(elements.barrio_search.value);
+  const filtered = barrios.filter((item) => utils.normalizeText(item.nombre).includes(query));
+  populateSelect(filtered);
+  if (!query) {
+    elements.search_status.textContent = `${barrios.length} barrios disponibles.`;
+  } else if (filtered.length) {
+    elements.search_status.textContent = `${filtered.length} coincidencia${filtered.length === 1 ? "" : "s"}. Elige la correcta para ver su ficha.`;
   } else {
-    elements.resultCard.hidden = true;
-    elements.emptyState.hidden = false;
+    elements.search_status.textContent = "Ese barrio no está disponible en el prototipo del Distrito 2. No se muestran datos inventados.";
+    showEmpty();
   }
-});
+}
 
-loadFrequencies();
+function showEmpty() {
+  selectedBarrio = null;
+  elements.result.hidden = true;
+  elements.empty_state.hidden = false;
+}
+
+function renderStatus(barrio) {
+  const incident = utils.activeIncident(incidents, barrio, new Date());
+  const state = incident?.estado || "NORMAL";
+  elements.service_status.className = `status-card ${state === "DEMORA" ? "status-delay" : state === "SERVICIO_SUSPENDIDO" ? "status-suspended" : "status-normal"}`;
+  elements.status_title.textContent = stateLabels[state];
+  elements.status_badge.textContent = state;
+  elements.status_details.replaceChildren();
+  if (!incident) {
+    elements.status_message.textContent = "No hay demora prevista";
+    const update = document.createElement("span");
+    const strong = document.createElement("strong");
+    strong.textContent = "Última actualización del registro: ";
+    update.append(strong, document.createTextNode(alertsUpdated ? formatDateTime(alertsUpdated) : "Sin incidencias publicadas"));
+    elements.status_details.append(update);
+    elements.status_disclaimer.textContent = "Se refiere a incidencias registradas en este prototipo, no a una confirmación operativa en tiempo real.";
+    return;
+  }
+  elements.status_message.textContent = state === "SERVICIO_SUSPENDIDO"
+    ? "El servicio programado está suspendido en este prototipo. Conserva tus residuos hasta una nueva actualización."
+    : state === "DEMORA" ? `Demora registrada: ${incident.motivo}` : "No hay demora prevista";
+  const details = [
+    ["Motivo", incident.motivo],
+    ["Retraso estimado", incident.estimacion_minutos ? `${incident.estimacion_minutos} minutos` : "No indicado"],
+    ["Actualización", formatDateTime(incident.actualizada_en)],
+    ["Vence", formatDateTime(incident.vence)],
+    ["Camiones afectados", (incident.objetivos.camiones || []).join(", ") || "No indicados"],
+    ["Barrios afectados", (incident.objetivos.barrios || []).join(", ") || "Según asignación del objetivo"],
+  ];
+  for (const [label, value] of details) {
+    const item = document.createElement("span");
+    const strong = document.createElement("strong");
+    strong.textContent = `${label}: `;
+    item.append(strong, document.createTextNode(escapeText(value)));
+    elements.status_details.append(item);
+  }
+  elements.status_disclaimer.textContent = "SIMULACIÓN ACADÉMICA — NO ES UN AVISO OFICIAL. Incidencia manual; no es telemetría ni confirmación de EMACRUZ.";
+}
+
+function renderNext(barrio) {
+  const next = utils.nextService(barrio, new Date());
+  if (!next) {
+    elements.next_service.textContent = "No disponible";
+    elements.next_time.textContent = "No se encontró otro servicio en la semana tipo.";
+    elements.next_truck.textContent = "—";
+    return;
+  }
+  const [year, month, day] = next.fecha.split("-");
+  elements.next_service.textContent = next.en_curso ? "En curso según la programación" : next.dia_nombre;
+  elements.next_time.textContent = `${day}/${month}/${year} · ${next.inicio}–${next.fin} (hora de Santa Cruz)`;
+  elements.next_truck.textContent = next.camion;
+}
+
+function renderWeek(barrio) {
+  elements.week_grid.replaceChildren();
+  for (const day of dayOrder) {
+    const service = barrio.horarios[day];
+    const card = document.createElement("div");
+    card.className = `day-card${service ? " active" : ""}`;
+    const name = document.createElement("strong");
+    name.textContent = dayLabels[day];
+    const time = document.createElement("span");
+    time.textContent = service ? `${service.inicio}–${service.fin}` : "Sin servicio";
+    card.append(name, time);
+    if (service) {
+      const truck = document.createElement("span");
+      truck.className = "truck";
+      truck.textContent = service.camion;
+      card.append(truck);
+    }
+    elements.week_grid.append(card);
+  }
+}
+
+function renderBarrio(barrio) {
+  selectedBarrio = barrio;
+  elements.result_id.textContent = `${barrio.id} · dato simulado`;
+  elements.result_name.textContent = barrio.nombre;
+  elements.result_uv.textContent = `Unidad Vecinal ${barrio.uv}`;
+  elements.result_frequency.textContent = String(barrio.frecuencia_semanal);
+  elements.coverage_uv.textContent = String(barrio.uv);
+  elements.map_reference.textContent = `En el mapa figura como “${barrio.nombre_mapa}”.`;
+  elements.selected_map_hint.textContent = `Referencia seleccionada: ${barrio.nombre_mapa}, UV ${barrio.uv}. Abre el mapa y busca ese rótulo.`;
+  renderStatus(barrio);
+  renderNext(barrio);
+  renderWeek(barrio);
+  elements.empty_state.hidden = true;
+  elements.result.hidden = false;
+}
+
+function selectMap(map) {
+  selectedMap = map;
+  elements.main_map.src = map.archivo;
+  elements.main_map.alt = map.titulo;
+  elements.dialog_image.src = map.archivo;
+  elements.dialog_image.alt = `${map.titulo}, ampliado`;
+  elements.dialog_title.textContent = map.titulo;
+  for (const button of elements.map_tabs.querySelectorAll("button")) button.classList.toggle("active", button.dataset.mapId === map.id);
+  resetZoom();
+}
+
+function renderMaps() {
+  elements.map_tabs.replaceChildren();
+  for (const map of maps) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.dataset.mapId = map.id;
+    button.textContent = map.titulo;
+    button.addEventListener("click", () => selectMap(map));
+    elements.map_tabs.append(button);
+  }
+  selectMap(maps[0]);
+}
+
+function resetZoom() {
+  zoom = 1;
+  elements.dialog_image.style.width = "100%";
+  const reset = document.querySelector('[data-zoom="reset"]');
+  if (reset) reset.textContent = "100%";
+}
+
+function changeZoom(delta) {
+  zoom = Math.min(3, Math.max(0.75, zoom + delta));
+  elements.dialog_image.style.width = `${zoom * 100}%`;
+  document.querySelector('[data-zoom="reset"]').textContent = `${Math.round(zoom * 100)}%`;
+}
+
+async function load() {
+  try {
+    const [dataResponse, alertsResponse] = await Promise.all([fetch(DATA_URL, { cache: "no-store" }), fetch(ALERTS_URL, { cache: "no-store" })]);
+    if (!dataResponse.ok || !alertsResponse.ok) throw new Error(`HTTP ${dataResponse.status}/${alertsResponse.status}`);
+    const [data, alertData] = await Promise.all([dataResponse.json(), alertsResponse.json()]);
+    if (!Array.isArray(data.barrios) || data.barrios.length !== 26 || !Array.isArray(alertData.incidencias)) throw new Error("Estructura JSON inesperada");
+    barrios = data.barrios;
+    incidents = alertData.incidencias;
+    alertsUpdated = alertData.ultima_actualizacion;
+    maps = data.mapas;
+    populateSelect();
+    renderMaps();
+    elements.barrio_count.textContent = String(barrios.length);
+    elements.barrio_search.disabled = false;
+    elements.barrio_select.disabled = false;
+    elements.search_status.textContent = `${barrios.length} barrios disponibles.`;
+  } catch (error) {
+    console.error(error);
+    elements.barrio_search.disabled = true;
+    elements.barrio_select.disabled = true;
+    elements.empty_state.hidden = true;
+    elements.load_error.hidden = false;
+    elements.search_status.textContent = "Los datos no están disponibles.";
+  }
+}
+
+elements.barrio_search.addEventListener("input", filterBarrios);
+elements.barrio_select.addEventListener("change", (event) => {
+  const barrio = barrios.find((item) => item.id === event.target.value);
+  if (barrio) renderBarrio(barrio); else showEmpty();
+});
+elements.open_map.addEventListener("click", () => elements.map_dialog.showModal());
+elements.close_map.addEventListener("click", () => elements.map_dialog.close());
+elements.map_dialog.addEventListener("click", (event) => { if (event.target === elements.map_dialog) elements.map_dialog.close(); });
+document.querySelector('[data-zoom="in"]').addEventListener("click", () => changeZoom(0.25));
+document.querySelector('[data-zoom="out"]').addEventListener("click", () => changeZoom(-0.25));
+document.querySelector('[data-zoom="reset"]').addEventListener("click", resetZoom);
+
+load();

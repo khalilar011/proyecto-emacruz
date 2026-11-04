@@ -1,0 +1,20 @@
+{
+  "estado": "cumple",
+  "fuente": "data/raw/distrito-2/Distrito_2_horarios_SIMULADOS.xlsx",
+  "sha256_antes": "35fa74023ffdbfb7ac894a2dd961724af5414ac4d702ce53f53eb81ae8c8c47e",
+  "sha256_despues": "35fa74023ffdbfb7ac894a2dd961724af5414ac4d702ce53f53eb81ae8c8c47e",
+  "conteos": {
+    "barrios": 26,
+    "unidades_vecinales": 15,
+    "servicios": 104,
+    "camiones": 12,
+    "servicios_dominicales": 12,
+    "barrios_duplicados": 0,
+    "referencias_inexistentes": 0,
+    "datos_incompletos": 0
+  },
+  "errores": [],
+  "advertencias": [
+    "La fuente no contiene rutas ni trayectorias; se publican servicios y camiones simulados sin inventarlas."
+  ]
+}
