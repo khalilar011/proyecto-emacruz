@@ -54,8 +54,8 @@ create table if not exists public.incidents (
   check (cardinality(affected_neighborhood_ids) > 0),
   check (cardinality(affected_truck_ids) > 0),
   check (
-    estimated_delay_minutes is null
-    or (state = 'DEMORA' and estimated_delay_minutes between 1 and 1440)
+    (state = 'DEMORA' and estimated_delay_minutes between 1 and 1440)
+    or (state <> 'DEMORA' and estimated_delay_minutes is null)
   )
 );
 
@@ -268,8 +268,10 @@ begin
   if char_length(trim(coalesce(p_reason_detail, ''))) not between 3 and 240 then
     raise exception 'Detalle de motivo inválido';
   end if;
-  if p_estimated_delay_minutes is not null
-    and (p_state <> 'DEMORA' or p_estimated_delay_minutes not between 1 and 1440) then
+  if (p_state = 'DEMORA' and (
+      p_estimated_delay_minutes is null
+      or p_estimated_delay_minutes not between 1 and 1440
+    )) or (p_state <> 'DEMORA' and p_estimated_delay_minutes is not null) then
     raise exception 'Estimación inválida';
   end if;
 
@@ -327,8 +329,10 @@ begin
     or char_length(trim(coalesce(p_reason_detail, ''))) not between 3 and 240 then
     raise exception 'Estado o motivo inválido';
   end if;
-  if p_estimated_delay_minutes is not null
-    and (p_state <> 'DEMORA' or p_estimated_delay_minutes not between 1 and 1440) then
+  if (p_state = 'DEMORA' and (
+      p_estimated_delay_minutes is null
+      or p_estimated_delay_minutes not between 1 and 1440
+    )) or (p_state <> 'DEMORA' and p_estimated_delay_minutes is not null) then
     raise exception 'Estimación inválida';
   end if;
 
@@ -419,6 +423,8 @@ begin
   return new;
 end;
 $$;
+
+revoke all on function public.log_alerta_ruta_incident_change() from public, anon, authenticated;
 
 drop trigger if exists alerta_ruta_incident_history on public.incidents;
 create trigger alerta_ruta_incident_history

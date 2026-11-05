@@ -10,8 +10,8 @@ const reasonLabels = {
 const elements = Object.fromEntries([
   "setup-panel", "login-panel", "login-form", "login-email", "login-password", "login-message",
   "dashboard", "session-user", "logout", "incident-form", "incident-id", "form-title", "cancel-edit",
-  "target-type", "target-id", "neighborhoods", "incident-state", "reason-code", "reason-detail",
-  "delay-minutes", "starts-at", "expires-at", "notes", "scope-preview", "publish-button", "form-message",
+  "target-type", "target-id", "target-coverage", "neighborhoods", "incident-state", "reason-code", "reason-detail", "reason-detail-field",
+  "delay-minutes", "delay-field", "starts-at", "expires-at", "next-service-window", "now-window", "notes", "scope-preview", "publish-button", "form-message",
   "status-filter", "alerts-body", "alerts-message",
 ].map((id) => [id.replaceAll("-", "_"), document.getElementById(id)]));
 
@@ -63,6 +63,53 @@ function selectedNeighborhoods() {
   return [...elements.neighborhoods.selectedOptions].map((item) => item.value);
 }
 
+function clearNeighborhoodSelection() {
+  for (const item of elements.neighborhoods.options) item.selected = false;
+}
+
+function barrioById(id) {
+  return catalog.barrios.find((item) => item.id === id);
+}
+
+function serviceById(id) {
+  return catalog.servicios.find((item) => item.id === id);
+}
+
+function serviceLabel(service) {
+  const barrio = barrioById(service.barrio_id);
+  return adminCore.serviceLabel(service, barrio);
+}
+
+function targetServices() {
+  return catalog.servicios.filter((service) => elements.target_type.value === "truck"
+    ? service.camion === elements.target_id.value
+    : service.id === elements.target_id.value);
+}
+
+function renderTargetCoverage() {
+  elements.target_coverage.replaceChildren();
+  const services = targetServices();
+  const title = document.createElement("strong");
+  title.textContent = elements.target_type.value === "truck"
+    ? `Barrios atendidos por ${elements.target_id.value} en la semana tipo`
+    : "Servicio seleccionado";
+  const grouped = new Map();
+  for (const service of services) {
+    const barrio = barrioById(service.barrio_id);
+    const key = service.barrio_id;
+    if (!grouped.has(key)) grouped.set(key, { barrio, services: [] });
+    grouped.get(key).services.push(service);
+  }
+  const list = document.createElement("ul");
+  for (const { barrio, services: barrioServices } of grouped.values()) {
+    const item = document.createElement("li");
+    const days = barrioServices.map((service) => `${service.dia_nombre} ${service.inicio}–${service.fin}`).join("; ");
+    item.textContent = `${barrio?.nombre || barrioServices[0].barrio_id} · UV ${barrio?.uv || "—"}: ${days}`;
+    list.append(item);
+  }
+  elements.target_coverage.append(title, list);
+}
+
 function updateTargetOptions(preferred) {
   const previous = preferred || elements.target_id.value;
   elements.target_id.replaceChildren();
@@ -75,6 +122,7 @@ function updateTargetOptions(preferred) {
     });
   }
   if ([...elements.target_id.options].some((item) => item.value === previous)) elements.target_id.value = previous;
+  renderTargetCoverage();
   updateScope();
 }
 
@@ -94,12 +142,46 @@ function updateScope() {
   strong.textContent = scope.servicios.length
     ? `${scope.servicios.length} servicio(s) y ${scope.barrios.length} barrio(s) afectados`
     : "Ningún servicio coincide con el objetivo y la vigencia";
-  const detail = document.createElement("p");
-  detail.textContent = scope.servicios.length
-    ? `Servicios: ${scope.servicios.join(", ")}. Los horarios originales no se modifican.`
-    : "Ajusta inicio, vencimiento, objetivo o barrios. No se puede publicar una alerta sin servicios concretos.";
-  detail.style.margin = "5px 0 0";
-  elements.scope_preview.append(strong, detail);
+  elements.scope_preview.append(strong);
+  if (scope.servicios.length) {
+    const list = document.createElement("ul");
+    for (const id of scope.servicios) {
+      const service = serviceById(id);
+      const item = document.createElement("li");
+      item.textContent = service ? serviceLabel(service) : id;
+      list.append(item);
+    }
+    const note = document.createElement("p");
+    note.textContent = "Los horarios originales no se modifican; la alerta se muestra como información adicional.";
+    elements.scope_preview.append(list, note);
+  } else {
+    const detail = document.createElement("p");
+    detail.textContent = "Ajusta la vigencia o usa “Próximo servicio”. No se puede publicar una alerta sin servicios concretos.";
+    elements.scope_preview.append(detail);
+  }
+}
+
+function useNowWindow() {
+  const now = new Date();
+  now.setMinutes(Math.ceil(now.getMinutes() / 5) * 5, 0, 0);
+  elements.starts_at.value = toLocalInput(now);
+  elements.expires_at.value = toLocalInput(new Date(now.getTime() + 4 * 3600000));
+  updateScope();
+}
+
+function useNextServiceWindow() {
+  const windowValue = incidentUtils.nextServiceWindow(
+    catalog.servicios, elements.target_type.value, elements.target_id.value,
+    selectedNeighborhoods(), new Date(),
+  );
+  if (!windowValue) {
+    setMessage(elements.form_message, "No se encontró un próximo servicio para esa selección.");
+    return;
+  }
+  elements.starts_at.value = toLocalInput(windowValue.startsAt);
+  elements.expires_at.value = toLocalInput(windowValue.expiresAt);
+  setMessage(elements.form_message, "");
+  updateScope();
 }
 
 function resetForm() {
@@ -110,23 +192,34 @@ function resetForm() {
   elements.reason_code.value = "LLUVIA";
   elements.reason_detail.value = "Lluvia";
   elements.delay_minutes.value = "45";
-  const now = new Date();
-  now.setMinutes(Math.ceil(now.getMinutes() / 5) * 5, 0, 0);
-  elements.starts_at.value = toLocalInput(now);
-  elements.expires_at.value = toLocalInput(new Date(now.getTime() + 4 * 3600000));
+  elements.starts_at.value = "";
+  elements.expires_at.value = "";
   elements.form_title.textContent = "Nueva alerta";
   elements.publish_button.textContent = "Publicar alerta";
   elements.cancel_edit.hidden = true;
   setMessage(elements.form_message, "");
   updateTargetOptions();
   updateStateFields();
+  updateReasonFields();
+  useNextServiceWindow();
 }
 
 function updateStateFields() {
   const delay = elements.incident_state.value === "DEMORA";
   elements.delay_minutes.disabled = !delay;
+  elements.delay_minutes.required = delay;
+  elements.delay_field.hidden = !delay;
   if (!delay) elements.delay_minutes.value = "";
+  else if (!elements.delay_minutes.value) elements.delay_minutes.value = "45";
   updateScope();
+}
+
+function updateReasonFields() {
+  const other = elements.reason_code.value === "OTRO";
+  elements.reason_detail_field.hidden = !other;
+  elements.reason_detail.required = other;
+  if (!other) elements.reason_detail.value = reasonLabels[elements.reason_code.value];
+  else if (Object.values(reasonLabels).includes(elements.reason_detail.value)) elements.reason_detail.value = "";
 }
 
 async function loadCatalog() {
@@ -138,9 +231,10 @@ async function loadCatalog() {
   resetForm();
 }
 
-function td(text) {
+function td(text, label) {
   const cell = document.createElement("td");
   cell.textContent = text;
+  if (label) cell.dataset.label = label;
   return cell;
 }
 
@@ -152,30 +246,41 @@ function renderIncidents() {
     const lifecycle = incidentUtils.classify(row);
     const tr = document.createElement("tr");
     const statusCell = document.createElement("td");
+    statusCell.dataset.label = "Estado";
     const pill = document.createElement("span");
     pill.className = `status-pill ${lifecycle}`;
     pill.textContent = lifecycle;
     const state = document.createElement("small");
     state.textContent = row.state;
     statusCell.append(pill, state);
-    const targetCell = td(`${row.primary_target_type === "truck" ? "Camión" : "Servicio"}: ${row.primary_target_id}`);
-    const scope = document.createElement("small");
-    scope.textContent = `${(row.affected_service_ids || []).length} servicio(s) · ${(row.affected_neighborhood_ids || []).length} barrio(s)`;
+    const targetCell = td(`${row.primary_target_type === "truck" ? "Camión" : "Servicio"}: ${row.primary_target_id}`, "Servicios afectados");
+    const scope = document.createElement("details");
+    const scopeSummary = document.createElement("summary");
+    scopeSummary.textContent = `${(row.affected_service_ids || []).length} servicio(s) · ${(row.affected_neighborhood_ids || []).length} barrio(s)`;
+    const scopeList = document.createElement("ul");
+    for (const id of row.affected_service_ids || []) {
+      const item = document.createElement("li");
+      const service = serviceById(id);
+      item.textContent = service ? serviceLabel(service) : id;
+      scopeList.append(item);
+    }
+    scope.append(scopeSummary, scopeList);
     targetCell.append(scope);
-    const reasonCell = td(row.reason_detail);
+    const reasonCell = td(row.reason_detail, "Motivo");
     const reasonCode = document.createElement("small");
     reasonCode.textContent = reasonLabels[row.reason_code] || row.reason_code;
     reasonCell.append(reasonCode);
     const actions = document.createElement("td");
     actions.className = "row-actions";
+    actions.dataset.label = "Acciones";
     const edit = document.createElement("button");
-    edit.type = "button"; edit.textContent = "Editar"; edit.disabled = lifecycle === "RETIRADA";
+    edit.type = "button"; edit.textContent = "Editar"; edit.disabled = lifecycle === "RETIRADA" || row.state === "NORMAL";
     edit.addEventListener("click", () => editIncident(row));
     const withdraw = document.createElement("button");
     withdraw.type = "button"; withdraw.textContent = "Retirar"; withdraw.className = "withdraw"; withdraw.disabled = lifecycle === "RETIRADA";
     withdraw.addEventListener("click", () => retireIncident(row));
     actions.append(edit, withdraw);
-    tr.append(statusCell, targetCell, reasonCell, td(row.estimated_delay_minutes ? `${row.estimated_delay_minutes} min` : "—"), td(formatDate(row.published_at)), actions);
+    tr.append(statusCell, targetCell, reasonCell, td(row.estimated_delay_minutes ? `${row.estimated_delay_minutes} min` : "—", "Demora"), td(formatDate(row.published_at), "Publicación"), actions);
     elements.alerts_body.append(tr);
   }
   setMessage(elements.alerts_message, `${filtered.length} de ${incidents.length} incidencias. Actualizado ${formatDate(new Date())}.`, true);
@@ -204,6 +309,7 @@ function editIncident(row) {
   elements.publish_button.textContent = "Guardar cambios";
   elements.cancel_edit.hidden = false;
   updateStateFields();
+  updateReasonFields();
   document.querySelector(".admin-card").scrollIntoView({ behavior: "smooth" });
 }
 
@@ -227,6 +333,10 @@ async function saveIncident(event) {
   const end = inputToIso(elements.expires_at.value);
   if (Date.parse(start) >= Date.parse(end)) { setMessage(elements.form_message, "El vencimiento debe ser posterior al inicio."); return; }
   const delay = elements.delay_minutes.value ? Number(elements.delay_minutes.value) : null;
+  if (elements.incident_state.value === "DEMORA" && !delay) {
+    setMessage(elements.form_message, "Indica los minutos estimados de demora.");
+    return;
+  }
   const params = {
     p_state: elements.incident_state.value,
     p_reason_code: elements.reason_code.value,
@@ -302,10 +412,13 @@ elements.login_form.addEventListener("submit", async (event) => {
 elements.logout.addEventListener("click", async () => { await adminCore.signOut(client); });
 elements.incident_form.addEventListener("submit", saveIncident);
 elements.cancel_edit.addEventListener("click", resetForm);
-elements.target_type.addEventListener("change", () => updateTargetOptions());
-[elements.target_id, elements.neighborhoods, elements.starts_at, elements.expires_at].forEach((item) => item.addEventListener("change", updateScope));
+elements.target_type.addEventListener("change", () => { clearNeighborhoodSelection(); updateTargetOptions(); useNextServiceWindow(); });
+elements.target_id.addEventListener("change", () => { clearNeighborhoodSelection(); renderTargetCoverage(); useNextServiceWindow(); });
+[elements.neighborhoods, elements.starts_at, elements.expires_at].forEach((item) => item.addEventListener("change", updateScope));
 elements.incident_state.addEventListener("change", updateStateFields);
-elements.reason_code.addEventListener("change", () => { elements.reason_detail.value = reasonLabels[elements.reason_code.value]; });
+elements.reason_code.addEventListener("change", updateReasonFields);
+elements.next_service_window.addEventListener("click", useNextServiceWindow);
+elements.now_window.addEventListener("click", useNowWindow);
 elements.status_filter.addEventListener("change", renderIncidents);
 window.addEventListener("beforeunload", () => { if (refreshTimer) clearInterval(refreshTimer); if (realtimeChannel) client?.removeChannel(realtimeChannel); });
 

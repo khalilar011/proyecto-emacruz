@@ -22,7 +22,9 @@
 
       <section id="setup-panel" class="auth-card" hidden>
         <p class="eyebrow">Configuración pendiente</p><h1>Conecta Supabase antes de iniciar sesión</h1>
-        <p>El panel está preparado, pero este despliegue no contiene una URL ni una clave pública de Supabase. Sigue la guía del repositorio y completa <code>web/config.js</code>. Nunca uses una clave <code>service_role</code>.</p>
+        <p>El panel está preparado, pero este despliegue todavía no está conectado a Supabase. Completa la configuración inicial una sola vez; después las alertas se administran desde el navegador, sin Git ni Ubuntu.</p>
+        <ol class="setup-steps"><li>Crear el proyecto Supabase.</li><li>Aplicar las migraciones y crear el primer administrador.</li><li>Publicar únicamente la URL y la clave pública en <code>web/config.js</code>.</li></ol>
+        <p><a href="https://github.com/khalilar011/proyecto-emacruz/blob/main/docs/configurar-supabase.md">Abrir instrucciones completas</a>. Nunca uses una clave <code>service_role</code>.</p>
         <a class="secondary-button" href="../">Volver a la consulta pública</a>
       </section>
 
@@ -39,10 +41,12 @@
             <form id="incident-form">
               <input id="incident-id" type="hidden" />
               <div class="form-grid two"><label>Objetivo principal<select id="target-type" required><option value="truck">Camión</option><option value="service">Servicio</option></select></label><label>Camión o servicio<select id="target-id" required></select></label></div>
-              <label>Limitar a barrios (opcional)<select id="neighborhoods" multiple size="6" aria-describedby="neighborhood-help"></select><small id="neighborhood-help">Sin selección se incluyen automáticamente todos los barrios del objetivo que tengan servicio dentro de la vigencia.</small></label>
-              <div class="form-grid two"><label>Estado<select id="incident-state" required><option value="DEMORA">Demora</option><option value="SERVICIO_SUSPENDIDO">Servicio suspendido</option><option value="NORMAL">Normal</option></select></label><label>Motivo<select id="reason-code" required><option value="LLUVIA">Lluvia</option><option value="FALLA_MECANICA">Falla mecánica</option><option value="PROBLEMA_TECNICO">Problema técnico</option><option value="OTRO">Otro</option></select></label></div>
-              <label>Descripción del motivo<input id="reason-detail" maxlength="240" minlength="3" value="Lluvia" required /></label>
-              <label>Demora estimada en minutos<input id="delay-minutes" type="number" min="1" max="1440" value="45" /></label>
+              <div id="target-coverage" class="target-coverage" aria-live="polite"></div>
+              <details class="optional-scope"><summary>Limitar a barrios específicos (opcional)</summary><label>Barrios incluidos<select id="neighborhoods" multiple size="6" aria-describedby="neighborhood-help"></select><small id="neighborhood-help">Sin selección se incluyen automáticamente los barrios del objetivo que tengan servicio dentro de la vigencia.</small></label></details>
+              <div class="form-grid two"><label>Estado<select id="incident-state" required><option value="DEMORA">Demora</option><option value="SERVICIO_SUSPENDIDO">Servicio suspendido</option></select></label><label>Motivo<select id="reason-code" required><option value="LLUVIA">Lluvia</option><option value="FALLA_MECANICA">Falla mecánica</option><option value="PROBLEMA_TECNICO">Problema técnico</option><option value="OTRO">Otro</option></select></label></div>
+              <label id="reason-detail-field" hidden>Describe el otro motivo<input id="reason-detail" maxlength="240" minlength="3" /></label>
+              <label id="delay-field">Demora estimada en minutos<input id="delay-minutes" type="number" min="1" max="1440" value="45" required /></label>
+              <div class="date-presets" aria-label="Opciones rápidas de vigencia"><span>Vigencia:</span><button id="next-service-window" type="button">Próximo servicio</button><button id="now-window" type="button">Ahora + 4 horas</button></div>
               <div class="form-grid two"><label>Inicio (hora de Santa Cruz)<input id="starts-at" type="datetime-local" required /></label><label>Vencimiento (hora de Santa Cruz)<input id="expires-at" type="datetime-local" required /></label></div>
               <label>Observaciones (opcional)<textarea id="notes" maxlength="1000" rows="3"></textarea></label>
               <div id="scope-preview" class="scope-preview" role="status" aria-live="polite"></div>
@@ -53,7 +57,7 @@
           <section class="admin-card alerts-card" aria-labelledby="alerts-title">
             <div class="card-title"><div><p class="eyebrow">Historial administrativo</p><h2 id="alerts-title">Incidencias</h2></div><label class="compact-label">Mostrar<select id="status-filter"><option value="TODAS">Todas</option><option value="ACTIVA">Activas</option><option value="PROGRAMADA">Programadas</option><option value="VENCIDA">Vencidas</option><option value="RETIRADA">Retiradas</option></select></label></div>
             <p id="alerts-message" class="form-message" role="status"></p>
-            <div class="table-wrap"><table><thead><tr><th>Estado</th><th>Objetivo</th><th>Motivo</th><th>Demora</th><th>Publicación</th><th>Acciones</th></tr></thead><tbody id="alerts-body"></tbody></table></div>
+            <div class="table-wrap"><table><thead><tr><th>Estado</th><th>Servicios afectados</th><th>Motivo</th><th>Demora</th><th>Publicación</th><th>Acciones</th></tr></thead><tbody id="alerts-body"></tbody></table></div>
           </section>
         </div>
       </section>

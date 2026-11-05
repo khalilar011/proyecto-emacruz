@@ -5,25 +5,30 @@ const fs = require("node:fs");
 const path = require("node:path");
 const incidentUtils = require("../web/incidents.js");
 global.AlertaRutaIncidents = incidentUtils;
-const mapUtils = require("../web/map.js");
+const mapViewer = require("../web/map-viewer.js");
 const dataSource = require("../web/supabase-data.js");
 const adminCore = require("../web/admin/admin-core.js");
 
 const catalog = JSON.parse(fs.readFileSync(path.join(__dirname, "../web/data/distrito-2.json"), "utf8"));
-const geodata = JSON.parse(fs.readFileSync(path.join(__dirname, "../web/data/geodata/distrito-2-uv.geojson"), "utf8"));
-const knownUvs = new Set(geodata.features.filter((item) => item.properties.kind === "uv").map((item) => item.properties.uv));
-assert.equal(catalog.barrios.every((item) => knownUvs.has(item.uv)), true);
-for (const barrio of catalog.barrios) assert.equal(mapUtils.barriosForUv(catalog.barrios, barrio.uv).some((item) => item.id === barrio.id), true);
+assert.equal(mapViewer.validCatalog(catalog.mapas), true);
+assert.deepEqual(catalog.mapas.map((item) => item.id), ["barrios", "plano", "uv"]);
+assert.equal(mapViewer.nextZoom(1, 0.25), 1.25);
+assert.equal(mapViewer.nextZoom(2.9, 0.25), 3);
+assert.equal(mapViewer.nextZoom(0.8, -0.25), 0.75);
 
-const truck = "SIM-C01";
-const day = "lunes";
-const expected = catalog.servicios.filter((item) => item.camion === truck && item.dia === day).sort((a, b) => a.orden_camion - b.orden_camion);
-assert.deepEqual(mapUtils.sequenceFor(catalog.servicios, truck, day).map((item) => item.id), expected.map((item) => item.id));
-const filtered = mapUtils.filterBarrios(catalog.barrios, catalog.servicios, [], { truck, day, state: "NORMAL" });
-assert.deepEqual(new Set(filtered.map((item) => item.id)), new Set(expected.map((item) => item.barrio_id)));
+const nextWindow = incidentUtils.nextServiceWindow(
+  catalog.servicios, "truck", "SIM-C01", [], new Date("2026-11-04T19:00:00-04:00"),
+);
+assert.equal(nextWindow.serviceId, "D2-S041");
+assert.equal(nextWindow.startsAt.toISOString(), "2026-11-05T15:30:00.000Z");
+assert.equal(nextWindow.expiresAt.toISOString(), "2026-11-05T18:30:00.000Z");
 
 assert.equal(adminCore.isConfigured({}, { createClient() {} }), false);
 assert.equal(adminCore.isConfigured({ supabaseUrl: "https://example.supabase.co", supabasePublishableKey: "x".repeat(30) }, { createClient() {} }), true);
+assert.equal(
+  adminCore.serviceLabel(catalog.servicios[0], catalog.barrios.find((item) => item.id === catalog.servicios[0].barrio_id)),
+  "Santa Clara · UV 15 · Lunes 08:00–11:00 · SIM-C01",
+);
 function membershipClient(data, error = null) {
   return { from(table) {
     assert.equal(table, "admin_users");
@@ -72,5 +77,5 @@ function membershipClient(data, error = null) {
   global.fetch = originalFetch;
   assert.equal(fallback.mode, "json");
   assert.deepEqual(fallback.incidents, []);
-  console.log("Pruebas web: mapa, cliente Supabase, fallback y autorización cumplen.");
+  console.log("Pruebas web: visor simple, valores del panel, Supabase, fallback y autorización cumplen.");
 })().catch((error) => { console.error(error); process.exitCode = 1; });

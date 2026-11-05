@@ -1,0 +1,16 @@
+# Configuración reproducible mínima de Alerta Ruta.
+# `supabase config push` solo modifica las propiedades declaradas aquí.
+project_id = "alerta-ruta"
+
+[auth]
+site_url = "https://khalilar011.github.io/proyecto-emacruz/admin/"
+additional_redirect_urls = [
+  "https://khalilar011.github.io/proyecto-emacruz/admin/",
+  "http://localhost:8000/admin/",
+]
+enable_signup = false
+enable_anonymous_sign_ins = false
+minimum_password_length = 8
+
+[auth.email]
+enabled = true

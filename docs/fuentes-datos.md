@@ -27,11 +27,11 @@ Los mapas publicados en `web/assets/maps/` son los tres insumos suministrados pa
 | Archivos originales | `data/raw/geodata/hogaria-2026-10-distritos.geojson` y `hogaria-2026-10-barrios.geojson` |
 | SHA-256 distritos | `5390f1fa43377c15424ca6a2d85784f8d01f2ca22b7d9cc0450d3b731c991f82` |
 | SHA-256 barrios/UV | `442084e4e3c79e1340be4e40b0e250176f7363bfd0671c21c93cbfaa19c822b5` |
-| Derivado publicado | `web/data/geodata/distrito-2-uv.geojson` |
+| Derivado conservado | `data/processed/geodata/distrito-2-uv.geojson` (no se publica ni consume en el frontend actual) |
 | Contenido usado | Un límite de `070101-distrito-2` y 15 geometrías correspondientes a las UV 15–22 y 37–43 |
 
 `scripts/prepare_map_data.py` verifica los hashes antes de extraer el derivado. La correspondencia de códigos fuente con números de UV se contrastó con la Guía Urbana y los mapas suministrados. La capa fuente denomina algunas entidades por barrios de referencia, por lo que la aplicación las presenta únicamente como UV.
 
-La fuente no aporta límites verificables para cada uno de los 26 barrios de la programación ni recorridos de recolección. En consecuencia, seleccionar un barrio centra su UV, y seleccionar un camión resalta cobertura y secuencia de servicios; no se dibujan trayectorias por calles. La cartografía base usa teselas estándar de OpenStreetMap con atribución visible, sin precarga ni descarga masiva.
+La fuente no aporta límites verificables para cada uno de los 26 barrios ni recorridos de recolección. Para evitar confusión, el frontend actual no carga estas geometrías, teselas ni capas interactivas. El vecino utiliza únicamente el visor de las tres imágenes suministradas; no se dibujan trayectorias ni posiciones.
 
 Los pesos o volúmenes acumulados no deben llenarse con cifras inventadas. La programación de esta fase no permite validar un modelo predictivo de acumulación.

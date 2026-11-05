@@ -33,6 +33,17 @@ begin
   ) then
     raise exception 'anon puede ejecutar create_alerta_ruta_incident';
   end if;
+  if has_function_privilege(
+    'anon',
+    'public.log_alerta_ruta_incident_change()',
+    'EXECUTE'
+  ) or has_function_privilege(
+    'authenticated',
+    'public.log_alerta_ruta_incident_change()',
+    'EXECUTE'
+  ) then
+    raise exception 'La función de auditoría es ejecutable desde el navegador';
+  end if;
   if (select count(*) from public.neighborhood_catalog where active) <> 26 then
     raise exception 'Catálogo de barrios distinto de 26';
   end if;

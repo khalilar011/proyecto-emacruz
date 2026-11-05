@@ -9,13 +9,13 @@ Prototipo universitario para consultar programación **simulada** de recolecció
 - Buscador y selector de 26 barrios, 15 UV, 104 servicios semanales y 12 camiones simulados.
 - Próximo servicio calculado con la hora `America/La_Paz` y semana programada del Excel.
 - Estados `NORMAL`, `DEMORA` y `SERVICIO_SUSPENDIDO`, con prioridad suspensión → demora → normal.
-- Mapa Leaflet/OpenStreetMap con límite distrital y 15 UV verificadas; filtros por camión, día y estado.
-- Cobertura y secuencia de barrios programados, sin inventar GPS, calles recorridas ni rutas oficiales.
+- Visor sencillo de los tres mapas suministrados: barrios, unidades vecinales y plano municipal, con ampliación entre 75 % y 300 %.
+- Sin Leaflet, polígonos, filtros cartográficos, GPS, calles recorridas ni rutas oficiales.
 - Panel `/admin/` con Supabase Auth, PostgreSQL, RLS, historial y operaciones validadas.
-- Un único respaldo JSON cuando Supabase todavía no está configurado o falla en la carga inicial.
+- Un único respaldo JSON si Supabase no responde durante la carga inicial.
 - Tres mapas suministrados, conservados como referencias secundarias ampliables.
 
-La integración Supabase queda inactiva mientras `web/config.js` no contenga una URL y una clave pública reales. En ese estado la consulta funciona con `web/data/incidencias.json` y el panel informa que falta configuración; no simula una conexión.
+La integración está conectada al proyecto Supabase `alerta-ruta-emacruz` mediante su URL y publishable key pública. Las migraciones, RLS, Auth, RPC e historial fueron comprobados contra el proyecto real; no se publica ninguna clave secreta.
 
 ## Estructura principal
 
@@ -28,21 +28,23 @@ scripts/
 ├── export_web_data.py
 ├── generate_supabase_catalog.py
 ├── manage_alerts.py
+├── verify_supabase_public.py
+├── verify_supabase_frontend.js
 └── prepare_map_data.py
 supabase/
+├── config.toml                                         # Auth remoto reproducible
 ├── migrations/                                         # esquema RLS y catálogo
-└── tests/security_checks.sql
+└── tests/                                              # seguridad y flujo transaccional
 tests/
 web/
 ├── admin/                                               # acceso Auth + RLS
 ├── assets/maps/
-├── data/geodata/distrito-2-uv.geojson
 ├── data/distrito-2.json
 ├── data/incidencias.json
 ├── index.html
 ├── app.js
 ├── incidents.js
-├── map.js
+├── map-viewer.js
 ├── schedule-utils.js
 └── supabase-data.js
 ```
@@ -59,10 +61,11 @@ python -m pip install -r requirements.txt
 python scripts/export_web_data.py --check
 python scripts/prepare_map_data.py --check
 python scripts/generate_supabase_catalog.py --check
+python scripts/validate_supabase_sql.py
 python -m http.server 8000 --directory web
 ```
 
-Abre `http://localhost:8000` y el panel en `http://localhost:8000/admin/`. Los archivos deben servirse por HTTP para cargar JSON y GeoJSON.
+Abre `http://localhost:8000` y el panel en `http://localhost:8000/admin/`. Los archivos deben servirse por HTTP para cargar el catálogo JSON y las incidencias.
 
 Para regenerar derivados después de cambiar deliberadamente una fuente:
 
@@ -74,14 +77,14 @@ python scripts/generate_supabase_catalog.py
 
 Los exportadores validan duplicados, campos incompletos, referencias, horarios, frecuencia, camiones, solapamientos, hashes y cantidades esperadas. Las fuentes de `data/raw/` no se modifican.
 
-## Activar el panel web
+## Configuración Supabase
 
-Sigue [docs/configurar-supabase.md](docs/configurar-supabase.md). En resumen:
+El proyecto actual ya está configurado. Para reproducir la instalación en otro proyecto, sigue [docs/configurar-supabase.md](docs/configurar-supabase.md). En resumen:
 
 1. crea el proyecto Supabase;
 2. ejecuta `0001_alerta_ruta_schema.sql`, `0002_catalog.sql` y `security_checks.sql`;
 3. deshabilita el registro público y crea el primer usuario desde el Dashboard;
-4. inserta su UUID en `admin_users`;
+4. autorízalo mediante `supabase/setup/authorize_first_admin.sql`;
 5. configura únicamente Project URL y publishable key en `web/config.js`;
 6. verifica login, creación, retiro y lectura pública antes de publicar.
 
@@ -93,7 +96,7 @@ No hay contraseñas ni claves privadas en el repositorio. La ruta `/admin/` es u
 2. inicia sesión con una cuenta autorizada;
 3. elige **Camión**, por ejemplo `SIM-C01`;
 4. selecciona `DEMORA`, motivo, estimación, inicio y vencimiento;
-5. revisa los servicios y barrios que coinciden realmente con esa ventana;
+5. revisa los nombres de barrios, UV, días y horarios que coinciden realmente con esa ventana;
 6. pulsa **Publicar alerta**.
 
 La web pública recibe el cambio por Realtime o en la consulta periódica. El horario del Excel no cambia: la demora se muestra como información adicional. La tabla permite editar y retirar; retirar exige confirmación y conserva el historial.
@@ -146,26 +149,39 @@ El panel permite publicación directa por un administrador autorizado; todavía 
 python scripts/export_web_data.py --check
 python scripts/prepare_map_data.py --check
 python scripts/generate_supabase_catalog.py --check
+python scripts/validate_supabase_sql.py
 python scripts/manage_alerts.py validar
 python -m unittest discover -s tests -p 'test_*.py' -v
 node tests/test_schedule.js
 node tests/test_incidents.js
 node tests/test_web_integration.js
 node --check web/app.js
-node --check web/map.js
+node --check web/map-viewer.js
 node --check web/supabase-data.js
 node --check web/admin/admin.js
 ```
 
-Las pruebas locales cubren consistencia Excel/JSON, cuatro servicios por barrio, hashes y reproducción de geodatos, catálogo SQL, estructura RLS/RPC, respaldo manual, próxima recolección, alcance temporal y prioridad. `supabase/tests/security_checks.sql` requiere un proyecto real y no se declara ejecutado hasta configurarlo.
+Las pruebas locales cubren consistencia Excel/JSON, cuatro servicios por barrio, los tres mapas del visor, límites de zoom, catálogo SQL con 104 tuplas cerradas, estructura RLS/RPC, respaldo manual, próxima recolección, alcance temporal y prioridad. `security_checks.sql` y `admin_flow_checks.sql` también fueron ejecutados satisfactoriamente en el proyecto real.
+
+Con la CLI autenticada y el repositorio vinculado al proyecto correcto, las verificaciones remotas son:
+
+```bash
+npx --yes supabase@latest db lint --remote --schema public --level warning --fail-on error --agent no
+npx --yes supabase@latest db query --remote --file supabase/tests/security_checks.sql --yes --agent no
+npx --yes supabase@latest db query --remote --file supabase/tests/admin_flow_checks.sql --yes --agent no
+python scripts/verify_supabase_public.py
+node scripts/verify_supabase_frontend.js  # requiere una incidencia pública vigente
+```
+
+`admin_flow_checks.sql` termina en `ROLLBACK`. La validación real del 4 de noviembre de 2026 confirmó login desde `/admin/`, creación, modificación, visibilidad pública, vencimiento, retiro e historial con RLS activa.
 
 Antes de cada `git push` se debe ejecutar la revisión de `skills/alerta-ruta-jira/SKILL.md`. GitHub Pages publica `web/` automáticamente al llegar un commit a `main`.
 
 ## Fuentes y limitaciones
 
 - Excel suministrado: programación y camiones ficticios para fines académicos.
-- Geometrías: Hogaria 2026-10, con crédito a GAMSCS y colaboradores de OpenStreetMap, licencia ODbL 1.0.
-- Calles base: teselas OpenStreetMap con atribución visible y sin descarga masiva.
+- Geometrías abiertas: se conservan en `data/raw/geodata/` y `data/processed/geodata/` para trazabilidad, pero ya no se cargan en el frontend.
+- Mapas públicos: únicamente los tres insumos gráficos suministrados al proyecto.
 - No existen geometrías verificadas de los límites exactos de los 26 barrios ni recorridos oficiales de recolección.
 - No hay GPS, clima automático, reclamos, mediciones reales ni datos para afirmar que un modelo predice acumulación.
 - El próximo servicio es un cálculo sobre la semana simulada, no una hora estimada de llegada.

@@ -17,8 +17,8 @@ Para la fase 2 académica se implementan los estados técnicos `NORMAL`, `DEMORA
 
 ## Extensión de despliegue: mapa y administración
 
-La programación continúa derivándose del Excel inmutable. El GeoJSON abierto aporta únicamente límite distrital y UV, mientras Supabase almacena incidencias y su historial. Esta separación evita convertir una incidencia en un cambio de horario o presentar una geometría territorial como recorrido operativo.
+La programación continúa derivándose del Excel inmutable y Supabase almacena únicamente incidencias y su historial. Los geodatos abiertos se conservan como fuente de trazabilidad, pero la web pública vuelve a los tres mapas gráficos suministrados. Esta separación evita presentar una geometría territorial como recorrido operativo.
 
 El vecino mantiene acceso anónimo de solo lectura a incidencias publicadas, simuladas, vigentes y no retiradas. El administrador usa correo/contraseña, debe figurar en `admin_users` y escribe solo mediante funciones PostgreSQL que vuelven a validar objetivo, servicio y ventana. RLS es el control efectivo; la ruta del panel no es secreta. El rol autorizado publica directamente en este prototipo: el flujo institucional operador/supervisor → administrador/comunicador con una aprobación separada queda pendiente de una historia futura.
 
-La visualización cartográfica se limita a cobertura por UV y secuencia programada. No se infieren posiciones de camiones, GPS, calles recorridas ni polígonos exactos de barrios. Una suspensión prevalece sobre una demora; una demora prevalece sobre la ausencia de incidencias, que se comunica como `NORMAL` sin confirmar la operación real.
+El visor de mapas no tiene capas, filtros ni selección territorial: solo cambia y amplía las imágenes de barrios, UV y plano municipal. No se infieren posiciones de camiones, GPS, calles recorridas ni polígonos exactos de barrios. Una suspensión prevalece sobre una demora; una demora prevalece sobre la ausencia de incidencias, que se comunica como `NORMAL` sin confirmar la operación real.

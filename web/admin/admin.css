@@ -9,6 +9,8 @@
 .auth-card { width: min(520px, 100%); margin: 60px auto; padding: clamp(25px, 5vw, 42px); border: 1px solid var(--line); border-radius: 28px; background: #fff; box-shadow: var(--shadow); }
 .auth-card h1 { margin-bottom: 14px; font-size: clamp(2rem, 7vw, 3.4rem); }
 .auth-card > p:not(.eyebrow) { color: var(--muted); }
+.setup-steps { margin: 18px 0; padding-left: 22px; color: var(--muted); }
+.setup-steps li { margin-bottom: 7px; }
 .auth-card form { display: grid; gap: 16px; margin-top: 24px; }
 .admin-title { display: flex; margin: 42px 0 26px; align-items: end; justify-content: space-between; gap: 20px; }
 .admin-title h1 { margin-bottom: 8px; font-size: clamp(2.4rem, 6vw, 4.8rem); }
@@ -27,8 +29,20 @@ label input:focus, label select:focus, label textarea:focus { border-color: var(
 label small { display: block; margin-top: 5px; color: var(--muted); font-weight: 500; }
 .form-grid { display: grid; gap: 13px; }
 .form-grid.two { grid-template-columns: repeat(2, minmax(0,1fr)); }
+.target-coverage { max-height: 210px; padding: 14px; border: 1px solid #c8dbd3; border-radius: 12px; overflow: auto; background: #f7faf8; font-size: .8rem; }
+.target-coverage strong { color: var(--ink); }
+.target-coverage ul, .scope-preview ul, td details ul { margin: 8px 0 0; padding-left: 20px; }
+.target-coverage li, .scope-preview li, td details li { margin-bottom: 5px; }
+.optional-scope { padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; }
+.optional-scope summary { color: var(--green-dark); font-size: .82rem; font-weight: 800; cursor: pointer; }
+.optional-scope label { display: block; margin-top: 12px; }
+.date-presets { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; color: var(--muted); font-size: .78rem; }
+.date-presets span { color: var(--ink); font-weight: 800; }
+.date-presets button { min-height: 36px; padding: 0 11px; border: 1px solid #b8cac3; border-radius: 9px; color: var(--green-dark); background: #fff; font-weight: 750; cursor: pointer; }
+.date-presets button:hover, .date-presets button:focus-visible { background: var(--green-soft); }
 .scope-preview { min-height: 74px; padding: 13px; border: 1px solid #c8dbd3; border-radius: 12px; color: var(--muted); background: #f2f8f5; font-size: .8rem; }
 .scope-preview strong { color: var(--ink); }
+.scope-preview p { margin: 8px 0 0; }
 .form-message { min-height: 20px; margin: 0; color: var(--danger); font-size: .82rem; }
 .form-message.success { color: var(--green-dark); }
 .compact-label { min-width: 145px; }
@@ -38,6 +52,8 @@ table { width: 100%; border-collapse: collapse; font-size: .8rem; }
 th, td { padding: 12px 10px; border-bottom: 1px solid var(--line); vertical-align: top; text-align: left; }
 th { color: var(--muted); font-size: .68rem; letter-spacing: .06em; text-transform: uppercase; }
 td small { display: block; color: var(--muted); }
+td details { margin-top: 6px; color: var(--muted); }
+td details summary { color: var(--green-dark); cursor: pointer; }
 .status-pill { display: inline-block; padding: 5px 8px; border-radius: 999px; background: #edf1ef; font-size: .68rem; font-weight: 900; }
 .status-pill.ACTIVA { color: #714c00; background: var(--delay-soft); }
 .status-pill.PROGRAMADA { color: #245a8b; background: #e2f0fb; }
@@ -55,4 +71,13 @@ td small { display: block; color: var(--muted); }
   .form-grid.two { grid-template-columns: 1fr; }
   .card-title { align-items: flex-start; flex-direction: column; }
   .alerts-card { padding-right: 14px; padding-left: 14px; }
+  .table-wrap { overflow: visible; }
+  table, tbody { display: block; width: 100%; }
+  thead { display: none; }
+  tr { display: grid; margin-bottom: 14px; padding: 12px; border: 1px solid var(--line); border-radius: 14px; background: #fff; }
+  td { display: grid; padding: 9px 4px; border-bottom: 1px solid var(--line); grid-template-columns: minmax(90px, .42fr) minmax(0, 1fr); gap: 10px; }
+  td::before { color: var(--muted); content: attr(data-label); font-size: .67rem; font-weight: 850; letter-spacing: .05em; text-transform: uppercase; }
+  td:last-child { border-bottom: 0; }
+  .row-actions { display: flex; }
+  .row-actions::before { min-width: 90px; }
 }

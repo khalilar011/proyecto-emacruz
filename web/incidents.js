@@ -110,8 +110,35 @@
     };
   }
 
+  function nextServiceWindow(services, targetType, targetId, neighborhoodIds, now = new Date()) {
+    const allowedNeighborhoods = new Set(neighborhoodIds || []);
+    const candidates = [];
+    const firstDate = new Date(`${localDate(now)}T12:00:00Z`);
+    for (let offset = 0; offset <= 7; offset += 1) {
+      const date = new Date(firstDate.getTime() + offset * 86400000).toISOString().slice(0, 10);
+      const weekday = (new Date(`${date}T12:00:00Z`).getUTCDay() + 6) % 7;
+      for (const service of services) {
+        if (Number(service.dia_indice) !== weekday) continue;
+        if (targetType === "truck" && service.camion !== targetId) continue;
+        if (targetType === "service" && service.id !== targetId) continue;
+        if (allowedNeighborhoods.size && !allowedNeighborhoods.has(service.barrio_id)) continue;
+        const start = Date.parse(`${date}T${service.inicio}:00${OFFSET}`);
+        const end = Date.parse(`${date}T${service.fin}:00${OFFSET}`);
+        if (end > now.getTime()) candidates.push({ service, start, end });
+      }
+    }
+    candidates.sort((first, second) => first.start - second.start || first.service.orden_camion - second.service.orden_camion);
+    const candidate = candidates[0];
+    if (!candidate) return null;
+    return {
+      serviceId: candidate.service.id,
+      startsAt: new Date(Math.max(candidate.start, now.getTime())),
+      expiresAt: new Date(candidate.end),
+    };
+  }
+
   return {
     PRIORITY, normalizeRow, incidentPriority, classify, incidentApplies,
-    statusForBarrio, serviceOccursInWindow, buildScope,
+    statusForBarrio, serviceOccursInWindow, buildScope, nextServiceWindow,
   };
 });

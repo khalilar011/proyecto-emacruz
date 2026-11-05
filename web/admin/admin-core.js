@@ -35,5 +35,10 @@
     return client.rpc("retire_alerta_ruta_incident", { p_id: incidentId });
   }
 
-  return { isConfigured, membership, signIn, signOut, saveIncident, retireIncident };
+  function serviceLabel(service, neighborhood) {
+    if (!service) return "Servicio no disponible";
+    return `${neighborhood?.nombre || service.barrio_id} · UV ${neighborhood?.uv || "—"} · ${service.dia_nombre} ${service.inicio}–${service.fin} · ${service.camion}`;
+  }
+
+  return { isConfigured, membership, signIn, signOut, saveIncident, retireIncident, serviceLabel };
 });

@@ -6,6 +6,7 @@ const dayLabels = { lunes: "Lun", martes: "Mar", miercoles: "Mié", jueves: "Jue
 const stateLabels = { NORMAL: "Normal", DEMORA: "Demora", SERVICIO_SUSPENDIDO: "Servicio suspendido" };
 const utils = window.AlertaRutaSchedule;
 const incidentUtils = window.AlertaRutaIncidents;
+const mapViewer = window.AlertaRutaMapViewer;
 
 const elements = Object.fromEntries(
   [
@@ -13,7 +14,7 @@ const elements = Object.fromEntries(
     "result-name", "result-uv", "result-frequency", "service-status", "status-title", "status-badge", "status-message",
     "status-details", "status-disclaimer", "next-service", "next-time", "next-truck", "coverage-uv", "map-reference",
     "week-grid", "load-error", "selected-map-hint", "main-map", "map-tabs", "open-map", "map-dialog", "dialog-title",
-    "dialog-image", "close-map", "incident-source", "map-truck-filter",
+    "dialog-image", "close-map", "incident-source",
   ].map((id) => [id.replaceAll("-", "_"), document.getElementById(id)]),
 );
 
@@ -24,7 +25,6 @@ let selectedBarrio = null;
 let selectedMap = null;
 let zoom = 1;
 let alertsUpdated = null;
-let services = [];
 
 function formatDateTime(value) {
   if (!value) return "No indicada";
@@ -67,7 +67,6 @@ function filterBarrios() {
 
 function showEmpty() {
   selectedBarrio = null;
-  window.AlertaRutaMap?.selectBarrio(null, false);
   elements.result.hidden = true;
   elements.empty_state.hidden = false;
 }
@@ -157,7 +156,6 @@ function renderBarrio(barrio) {
   renderStatus(barrio);
   renderNext(barrio);
   renderWeek(barrio);
-  window.AlertaRutaMap?.selectBarrio(barrio.id);
   elements.empty_state.hidden = true;
   elements.result.hidden = false;
 }
@@ -169,7 +167,11 @@ function selectMap(map) {
   elements.dialog_image.src = map.archivo;
   elements.dialog_image.alt = `${map.titulo}, ampliado`;
   elements.dialog_title.textContent = map.titulo;
-  for (const button of elements.map_tabs.querySelectorAll("button")) button.classList.toggle("active", button.dataset.mapId === map.id);
+  for (const button of elements.map_tabs.querySelectorAll("button")) {
+    const active = button.dataset.mapId === map.id;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+  }
   resetZoom();
 }
 
@@ -180,6 +182,7 @@ function renderMaps() {
     button.type = "button";
     button.dataset.mapId = map.id;
     button.textContent = map.titulo;
+    button.setAttribute("aria-pressed", "false");
     button.addEventListener("click", () => selectMap(map));
     elements.map_tabs.append(button);
   }
@@ -194,7 +197,7 @@ function resetZoom() {
 }
 
 function changeZoom(delta) {
-  zoom = Math.min(3, Math.max(0.75, zoom + delta));
+  zoom = mapViewer.nextZoom(zoom, delta);
   elements.dialog_image.style.width = `${zoom * 100}%`;
   document.querySelector('[data-zoom="reset"]').textContent = `${Math.round(zoom * 100)}%`;
 }
@@ -204,38 +207,21 @@ async function load() {
     const dataResponse = await fetch(DATA_URL, { cache: "no-store" });
     if (!dataResponse.ok) throw new Error(`HTTP ${dataResponse.status}`);
     const data = await dataResponse.json();
-    if (!Array.isArray(data.barrios) || data.barrios.length !== 26 || !Array.isArray(data.servicios)) throw new Error("Estructura JSON inesperada");
+    if (!Array.isArray(data.barrios) || data.barrios.length !== 26 || !Array.isArray(data.servicios) || !mapViewer.validCatalog(data.mapas)) throw new Error("Estructura JSON inesperada");
     barrios = data.barrios;
-    services = data.servicios;
     maps = data.mapas;
     populateSelect();
     renderMaps();
-    const trucks = [...new Set(services.map((item) => item.camion))].sort();
-    for (const truck of trucks) {
-      const option = document.createElement("option");
-      option.value = truck;
-      option.textContent = truck;
-      elements.map_truck_filter.append(option);
-    }
     elements.barrio_count.textContent = String(barrios.length);
     elements.barrio_search.disabled = false;
     elements.barrio_select.disabled = false;
     elements.search_status.textContent = `${barrios.length} barrios disponibles.`;
-    await window.AlertaRutaMap.initialize({ onSelect: (id) => {
-      const barrio = barrios.find((item) => item.id === id);
-      if (!barrio) return;
-      elements.barrio_select.value = id;
-      renderBarrio(barrio);
-      document.getElementById("consulta").scrollIntoView({ behavior: "smooth", block: "start" });
-    } });
-    window.AlertaRutaMap.setData(barrios, services, incidents);
     await window.AlertaRutaData.start(async (update) => {
       incidents = update.incidents;
       alertsUpdated = update.updatedAt;
       elements.incident_source.textContent = update.mode === "supabase"
         ? "Fuente de incidencias: Supabase · actualización automática activa."
         : `Fuente de incidencias: respaldo JSON local.${update.warning ? ` ${update.warning}` : ""}`;
-      window.AlertaRutaMap.setData(barrios, services, incidents);
       if (selectedBarrio) renderStatus(selectedBarrio);
     });
   } catch (error) {
@@ -253,9 +239,10 @@ elements.barrio_select.addEventListener("change", (event) => {
   const barrio = barrios.find((item) => item.id === event.target.value);
   if (barrio) renderBarrio(barrio); else showEmpty();
 });
-elements.open_map.addEventListener("click", () => elements.map_dialog.showModal());
+elements.open_map.addEventListener("click", () => { elements.map_dialog.showModal(); elements.close_map.focus(); });
 elements.close_map.addEventListener("click", () => elements.map_dialog.close());
 elements.map_dialog.addEventListener("click", (event) => { if (event.target === elements.map_dialog) elements.map_dialog.close(); });
+elements.map_dialog.addEventListener("close", () => elements.open_map.focus());
 document.querySelector('[data-zoom="in"]').addEventListener("click", () => changeZoom(0.25));
 document.querySelector('[data-zoom="out"]').addEventListener("click", () => changeZoom(-0.25));
 document.querySelector('[data-zoom="reset"]').addEventListener("click", resetZoom);

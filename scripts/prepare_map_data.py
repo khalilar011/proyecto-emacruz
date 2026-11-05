@@ -15,7 +15,6 @@ RAW_DIR = ROOT / "data/raw/geodata"
 DISTRICTS = RAW_DIR / "hogaria-2026-10-distritos.geojson"
 NEIGHBORHOODS = RAW_DIR / "hogaria-2026-10-barrios.geojson"
 PROCESSED = ROOT / "data/processed/geodata/distrito-2-uv.geojson"
-WEB = ROOT / "web/data/geodata/distrito-2-uv.geojson"
 
 EXPECTED_HASHES = {
     DISTRICTS: "5390f1fa43377c15424ca6a2d85784f8d01f2ca22b7d9cc0450d3b731c991f82",
@@ -156,14 +155,14 @@ def main() -> int:
         if args.check:
             stale = [
                 str(path.relative_to(ROOT))
-                for path in (PROCESSED, WEB)
+                for path in (PROCESSED,)
                 if not path.is_file() or path.read_text(encoding="utf-8") != expected
             ]
             if stale:
                 raise MapDataError("Archivos ausentes o desactualizados: " + ", ".join(stale))
             print("GeoJSON actualizado: 1 distrito y 15 UV; fuentes sin modificar.")
         else:
-            for path in (PROCESSED, WEB):
+            for path in (PROCESSED,):
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_text(expected, encoding="utf-8")
             print("Generado GeoJSON: 1 distrito y 15 UV verificables.")

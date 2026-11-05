@@ -1,5 +1,7 @@
 # Dictamen técnico previo a push — 2026-11-04
 
+> Dictamen histórico del commit `896d01b`, anterior a la simplificación del visor y a la corrección del catálogo SQL.
+
 **Dictamen: APROBADO**
 
 - Rama y base revisadas: `main`, HEAD `783851bd0b8927e8e5b91eb5ea2cdc6e2a7e8a99`, sincronizada con `origin/main` al iniciar.

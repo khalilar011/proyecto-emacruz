@@ -55,3 +55,6 @@ Desktop.ini
 
 # Copia local redundante del repositorio anterior
 proyecto-emacruz/
+
+# Estado local generado por Supabase CLI al vincular un proyecto
+supabase/.temp/

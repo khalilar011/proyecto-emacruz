@@ -1,5 +1,7 @@
 # Matriz de trazabilidad — mapa interactivo y administración
 
+> Revisión histórica del commit `896d01b`. El alcance cartográfico fue sustituido posteriormente por el visor simple solicitado en SCRUM-14; no usar esta matriz como estado vigente.
+
 Fecha de revisión: 2026-11-04. Historias vigentes consultadas directamente en Jira: SCRUM-14, SCRUM-15 y SCRUM-19. Las tres permanecen en «Por hacer» durante la preparación; esta matriz no las cierra ni sustituye la revisión previa al push.
 
 ## SCRUM-14 — mapa interactivo

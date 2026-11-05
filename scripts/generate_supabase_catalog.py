@@ -58,7 +58,7 @@ def build() -> str:
                 str(int(item["orden_camion"])),
                 "true",
             ]
-        ) + ("," if index < len(servicios) - 1 else "")
+        ) + ")" + ("," if index < len(servicios) - 1 else "")
         for index, item in enumerate(servicios)
     )
     lines.extend(
