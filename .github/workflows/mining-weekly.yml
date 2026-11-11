@@ -1,0 +1,32 @@
+name: Actualizar minería semanal
+
+on:
+  schedule:
+    # Bolivia (America/La_Paz) usa UTC-4 todo el año: lunes 03:00 = 07:00 UTC.
+    - cron: "0 7 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: alerta-ruta-mining-weekly
+  cancel-in-progress: false
+
+jobs:
+  analyze:
+    name: Analizar historial registrado
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Invocar el motor único de minería
+        env:
+          MINING_SCHEDULE_SECRET: ${{ secrets.MINING_SCHEDULE_SECRET }}
+        run: |
+          test -n "$MINING_SCHEDULE_SECRET"
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --header "Content-Type: application/json" \
+            --header "x-schedule-secret: $MINING_SCHEDULE_SECRET" \
+            --data '{"mode":"history"}' \
+            https://isbjpdslwhpbqfhwxvqr.supabase.co/functions/v1/mining-analysis

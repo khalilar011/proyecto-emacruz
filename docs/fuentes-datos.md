@@ -35,3 +35,12 @@ Los mapas publicados en `web/assets/maps/` son los tres insumos suministrados pa
 La fuente no aporta límites verificables para cada uno de los 26 barrios ni recorridos de recolección. Para evitar confusión, el frontend actual no carga estas geometrías, teselas ni capas interactivas. El vecino utiliza únicamente el visor de las tres imágenes suministradas; no se dibujan trayectorias ni posiciones.
 
 Los pesos o volúmenes acumulados no deben llenarse con cifras inventadas. La programación de esta fase no permite validar un modelo predictivo de acumulación.
+
+## Fuentes del módulo de minería
+
+| Modalidad | Origen | Unidad | Tratamiento | Limitación |
+| --- | --- | --- | --- | --- |
+| Historial registrado del prototipo | `public.incidents`, unido a `neighborhood_catalog` y `service_catalog` | Una fila actual por `incidents.id` | Incluye retiradas, deduplica IDs y no convierte cada edición de `incident_history` en otra observación | Todo el sistema es un prototipo simulado; no hay ejecución real, causas verificadas ni etiquetas separadas de cancelación/prueba |
+| Demostración académica | Generador determinista en `supabase/functions/_shared/mining-engine.mjs` | 180 incidencias sintéticas | Semilla `20261111`, valores del catálogo y periodo 2026-01-05 a 2026-07-05; se genera en memoria | Las asociaciones diseñadas sirven para comprobar Apriori y nunca se presentan como hallazgos de EMACRUZ |
+
+Los resultados derivados se guardan en `mining_analysis_runs`, separados de las fuentes originales. La tabla almacena agregados y reglas, no copia el dataset sintético a `incidents`.

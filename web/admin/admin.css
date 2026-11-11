@@ -12,6 +12,10 @@
 .setup-steps { margin: 18px 0; padding-left: 22px; color: var(--muted); }
 .setup-steps li { margin-bottom: 7px; }
 .auth-card form { display: grid; gap: 16px; margin-top: 24px; }
+.admin-tabs { display: flex; width: fit-content; margin: 28px 0 10px; padding: 5px; border: 1px solid var(--line); border-radius: 14px; gap: 4px; background: #fff; box-shadow: 0 8px 24px rgba(18,55,44,.05); }
+.admin-tabs a { padding: 10px 15px; border-radius: 10px; color: var(--green-dark); font-size: .83rem; font-weight: 850; text-decoration: none; }
+.admin-tabs a:hover, .admin-tabs a:focus-visible { background: var(--green-soft); }
+.admin-tabs a.active { color: #fff; background: var(--green-dark); }
 .admin-title { display: flex; margin: 42px 0 26px; align-items: end; justify-content: space-between; gap: 20px; }
 .admin-title h1 { margin-bottom: 8px; font-size: clamp(2.4rem, 6vw, 4.8rem); }
 .admin-title p:last-child { margin-bottom: 0; color: var(--muted); }
@@ -68,6 +72,8 @@ td details summary { color: var(--green-dark); cursor: pointer; }
   #session-user, .admin-header .brand small { display: none; }
   .admin-main { width: calc(100% - 24px); padding-top: 20px; }
   .admin-title { align-items: flex-start; flex-direction: column; }
+  .admin-tabs { width: 100%; }
+  .admin-tabs a { flex: 1; text-align: center; }
   .form-grid.two { grid-template-columns: 1fr; }
   .card-title { align-items: flex-start; flex-direction: column; }
   .alerts-card { padding-right: 14px; padding-left: 14px; }

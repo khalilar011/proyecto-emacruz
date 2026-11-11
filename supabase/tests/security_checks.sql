@@ -10,7 +10,7 @@ begin
   from pg_class c
   join pg_namespace n on n.oid = c.relnamespace
   where n.nspname = 'public'
-    and c.relname = any(array['admin_users','neighborhood_catalog','service_catalog','incidents','incident_history'])
+    and c.relname = any(array['admin_users','neighborhood_catalog','service_catalog','incidents','incident_history','mining_analysis_runs'])
     and not c.relrowsecurity;
   if cardinality(missing_rls) > 0 then
     raise exception 'RLS ausente en: %', missing_rls;
@@ -25,6 +25,17 @@ begin
     or has_table_privilege('authenticated', 'public.incidents', 'UPDATE')
     or has_table_privilege('authenticated', 'public.incidents', 'DELETE') then
     raise exception 'authenticated posee escritura directa; debe usar RPC validada';
+  end if;
+  if has_table_privilege('anon', 'public.mining_analysis_runs', 'SELECT')
+    or has_table_privilege('anon', 'public.mining_analysis_runs', 'INSERT')
+    or has_table_privilege('anon', 'public.mining_analysis_runs', 'UPDATE')
+    or has_table_privilege('anon', 'public.mining_analysis_runs', 'DELETE') then
+    raise exception 'anon posee permisos sobre resultados privados de minería';
+  end if;
+  if has_table_privilege('authenticated', 'public.mining_analysis_runs', 'INSERT')
+    or has_table_privilege('authenticated', 'public.mining_analysis_runs', 'UPDATE')
+    or has_table_privilege('authenticated', 'public.mining_analysis_runs', 'DELETE') then
+    raise exception 'authenticated puede escribir corridas de minería directamente';
   end if;
   if has_function_privilege(
     'anon',
@@ -56,6 +67,14 @@ begin
       and policyname = 'Public reads active simulated incidents'
   ) then
     raise exception 'Falta política pública de incidencias vigentes';
+  end if;
+  if not exists (
+    select 1 from pg_policies
+    where schemaname = 'public' and tablename = 'mining_analysis_runs'
+      and policyname = 'Admins read mining analysis'
+      and roles = array['authenticated']::name[]
+  ) then
+    raise exception 'Falta política privada de resultados de minería';
   end if;
 end;
 $$;

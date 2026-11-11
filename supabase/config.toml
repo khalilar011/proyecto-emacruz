@@ -6,7 +6,9 @@ project_id = "alerta-ruta"
 site_url = "https://khalilar011.github.io/proyecto-emacruz/admin/"
 additional_redirect_urls = [
   "https://khalilar011.github.io/proyecto-emacruz/admin/",
+  "https://khalilar011.github.io/proyecto-emacruz/admin/mineria/",
   "http://localhost:8000/admin/",
+  "http://localhost:8000/admin/mineria/",
 ]
 enable_signup = false
 enable_anonymous_sign_ins = false
@@ -14,3 +16,8 @@ minimum_password_length = 8
 
 [auth.email]
 enabled = true
+
+# La función valida explícitamente el JWT del usuario o el secreto de la tarea
+# programada. `verify_jwt = false` permite el segundo mecanismo sin claves legacy.
+[functions.mining-analysis]
+verify_jwt = false

@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex,nofollow" />
+    <meta name="theme-color" content="#075f4b" />
+    <title>Minería de datos · Alerta Ruta</title>
+    <link rel="stylesheet" href="../../styles.css" />
+    <link rel="stylesheet" href="../admin.css" />
+    <link rel="stylesheet" href="mining.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js" integrity="sha384-GFr3yTh5lJznCbZfpTtXnwboFsxqtTQoeTZCRHhE0579KrRmlCzen5AA8ohaB5ug" crossorigin="anonymous" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" integrity="sha384-vsrfeLOOY6KuIYKDlmVH5UiBmgIdB1oEf7p01YgWHuqmOHfZr374+odEv96n9tNC" crossorigin="anonymous" defer></script>
+    <script src="../../config.js" defer></script>
+    <script src="../admin-core.js" defer></script>
+    <script src="mining.js" defer></script>
+  </head>
+  <body class="admin-body">
+    <a class="skip-link" href="#mining-main">Saltar al contenido</a>
+    <header class="admin-header">
+      <a class="brand" href="../../"><span class="brand-icon" aria-hidden="true">AR</span><span><strong>Alerta Ruta</strong><small>Panel de administración</small></span></a>
+      <div><span id="session-user"></span><button id="logout" class="ghost-button" type="button" hidden>Cerrar sesión</button></div>
+    </header>
+
+    <main id="mining-main" class="admin-main mining-main">
+      <aside class="academic-notice" role="note"><span aria-hidden="true">!</span><p><strong>Herramienta académica de apoyo a decisiones.</strong> Las asociaciones no demuestran causalidad ni representan indicadores oficiales de puntualidad de EMACRUZ.</p></aside>
+
+      <section id="setup-panel" class="auth-card" hidden>
+        <p class="eyebrow">Configuración pendiente</p>
+        <h1>No se pudo conectar el módulo</h1>
+        <p>Comprueba la configuración pública de Supabase y el despliegue de la función privada.</p>
+        <a class="secondary-button" href="../">Volver a Gestión de alertas</a>
+      </section>
+
+      <section id="access-panel" class="auth-card" hidden>
+        <p class="eyebrow">Acceso restringido</p>
+        <h1>Autorización administrativa requerida</h1>
+        <p id="access-message">Inicia sesión desde Gestión de alertas con una cuenta autorizada.</p>
+        <a class="secondary-button" href="../">Ir al inicio de sesión</a>
+      </section>
+
+      <section id="dashboard" hidden>
+        <nav class="admin-tabs" aria-label="Secciones de administración">
+          <a href="../">Gestión de alertas</a>
+          <a class="active" href="./" aria-current="page">Minería de datos</a>
+        </nav>
+
+        <div class="mining-title">
+          <div><p class="eyebrow">Distrito Municipal N.º 2</p><h1>Minería de datos</h1><p>Descriptivos, tasas sobre servicios programados y reglas de asociación Apriori.</p></div>
+          <button id="refresh-analysis" class="primary-button update-button" type="button">Actualizar análisis</button>
+        </div>
+        <p id="analysis-message" class="analysis-message" role="status" aria-live="polite"></p>
+
+        <aside id="mode-notice" class="mode-notice demo" role="note">
+          <strong>DATOS SINTÉTICOS — DEMOSTRACIÓN ACADÉMICA</strong>
+          <span>Dataset reproducible generado con semilla fija; no se mezcla con las incidencias registradas.</span>
+        </aside>
+
+        <section class="filter-card" aria-labelledby="filter-title">
+          <div><p class="eyebrow">Configuración</p><h2 id="filter-title">Datos y umbrales</h2></div>
+          <div class="filter-grid">
+            <label>Modo de datos<select id="data-mode"><option value="demo">Demostración académica</option><option value="history">Historial registrado del prototipo</option></select></label>
+            <label>Desde (opcional)<input id="period-start" type="date" /></label>
+            <label>Hasta (opcional)<input id="period-end" type="date" /></label>
+            <label>Barrio (opcional)<select id="neighborhood-filter"><option value="">Todos los barrios</option></select></label>
+            <label>Camión (opcional)<select id="truck-filter"><option value="">Todos los camiones</option></select></label>
+          </div>
+          <details class="apriori-settings">
+            <summary>Ajustar umbrales Apriori</summary>
+            <div class="filter-grid thresholds">
+              <label>Soporte mínimo<input id="min-support" type="number" min="0.01" max="0.5" step="0.01" value="0.08" /></label>
+              <label>Confianza mínima<input id="min-confidence" type="number" min="0.1" max="1" step="0.05" value="0.55" /></label>
+              <label>Lift mínimo<input id="min-lift" type="number" min="0.5" max="10" step="0.05" value="1.05" /></label>
+              <label>Máximo de reglas<input id="max-rules" type="number" min="1" max="100" step="1" value="30" /></label>
+            </div>
+          </details>
+          <p class="filter-help">Los filtros y umbrales se aplican al pulsar “Actualizar análisis”. Cada resultado queda persistido como una corrida nueva.</p>
+        </section>
+
+        <section class="kpi-grid" aria-label="Indicadores principales">
+          <article class="kpi"><span>Incidencias únicas</span><strong id="kpi-incidents">—</strong><small>Una vez por ID, no por edición</small></article>
+          <article class="kpi"><span>Barrios afectados</span><strong id="kpi-neighborhoods">—</strong><small>Una incidencia puede afectar varios</small></article>
+          <article class="kpi"><span>Camiones afectados</span><strong id="kpi-trucks">—</strong><small>Identificadores simulados</small></article>
+          <article class="kpi"><span>Motivo más frecuente</span><strong id="kpi-reason">—</strong><small>Según registros analizados</small></article>
+          <article class="kpi"><span>Demora estimada promedio</span><strong id="kpi-delay">—</strong><small>Sólo incidencias con estimación</small></article>
+          <article class="kpi"><span>Reglas identificadas</span><strong id="kpi-rules">—</strong><small>Superan los umbrales configurados</small></article>
+          <article class="kpi"><span>Último análisis</span><strong id="kpi-updated">—</strong><small id="kpi-execution">—</small></article>
+        </section>
+
+        <section class="service-summary" aria-label="Comparación con programación">
+          <div><span>Servicios programados en el periodo</span><strong id="programmed-services">—</strong></div>
+          <div><span>Servicios programados afectados</span><strong id="affected-services">—</strong></div>
+          <div><span>Incidencias retiradas conservadas</span><strong id="retired-incidents">—</strong></div>
+          <p>Son ocurrencias esperadas según el calendario semanal, no servicios confirmados. El esquema distingue retiradas, pero aún no etiqueta cancelaciones o pruebas; el análisis no las infiere.</p>
+        </section>
+
+        <section class="chart-grid" aria-label="Visualizaciones calculadas">
+          <article class="chart-card wide"><div><p class="eyebrow">Territorio</p><h2>Barrios con más incidencias</h2></div><div class="chart-box tall"><canvas id="neighborhood-chart" aria-label="Gráfico de incidencias por barrio" role="img"></canvas></div></article>
+          <article class="chart-card"><div><p class="eyebrow">Flota simulada</p><h2>Camiones con más incidencias</h2></div><div class="chart-box"><canvas id="truck-chart" aria-label="Gráfico de incidencias por camión" role="img"></canvas></div></article>
+          <article class="chart-card"><div><p class="eyebrow">Causas registradas</p><h2>Principales motivos</h2></div><div class="chart-box"><canvas id="reason-chart" aria-label="Gráfico de motivos de incidencia" role="img"></canvas></div></article>
+          <article class="chart-card"><div><p class="eyebrow">Calendario</p><h2>Incidencias por día</h2></div><div class="chart-box"><canvas id="weekday-chart" aria-label="Gráfico de incidencias por día de la semana" role="img"></canvas></div></article>
+          <article class="chart-card"><div><p class="eyebrow">Horario programado</p><h2>Incidencias por turno</h2></div><div class="chart-box"><canvas id="shift-chart" aria-label="Gráfico de incidencias por turno" role="img"></canvas></div></article>
+          <article class="chart-card wide"><div><p class="eyebrow">Tiempo</p><h2>Evolución semanal</h2></div><div class="chart-box"><canvas id="timeline-chart" aria-label="Gráfico de evolución semanal" role="img"></canvas></div></article>
+          <article class="chart-card"><div><p class="eyebrow">Estimaciones</p><h2>Duración de demoras</h2></div><div class="chart-box"><canvas id="duration-chart" aria-label="Distribución de demora estimada" role="img"></canvas></div></article>
+        </section>
+
+        <section class="analysis-card" aria-labelledby="comparison-title">
+          <div><p class="eyebrow">Comparación justa</p><h2 id="comparison-title">Conteos y tasas normalizadas</h2></div>
+          <p>“Por 100” divide incidencias registradas entre servicios programados esperados en el periodo. No mide cumplimiento real.</p>
+          <div class="comparison-grid">
+            <div><h3>Barrios</h3><div class="table-wrap"><table><thead><tr><th>Barrio</th><th>Incidencias</th><th>Programados</th><th>Por 100</th></tr></thead><tbody id="neighborhood-comparison"></tbody></table></div></div>
+            <div><h3>Camiones</h3><div class="table-wrap"><table><thead><tr><th>Camión</th><th>Incidencias</th><th>Programados</th><th>Por 100</th></tr></thead><tbody id="truck-comparison"></tbody></table></div></div>
+          </div>
+        </section>
+
+        <section class="analysis-card" aria-labelledby="rules-title">
+          <div class="rules-heading"><div><p class="eyebrow">Apriori</p><h2 id="rules-title">Reglas de asociación</h2></div><span id="rule-count" class="secure-badge">— reglas</span></div>
+          <p id="rule-intro">Cada transacción representa una incidencia única. Soporte, confianza y lift se calculan sobre esas transacciones.</p>
+          <div id="rules-list" class="rules-list"></div>
+        </section>
+
+        <section class="analysis-card findings-card" aria-labelledby="findings-title">
+          <div><p class="eyebrow">Apoyo a decisiones</p><h2 id="findings-title">Hallazgos y recomendaciones para la gestión operativa</h2></div>
+          <ul id="findings-list"></ul>
+          <p class="method-note"><strong>Límite:</strong> las recomendaciones orientan preguntas para mantenimiento y programación. No diagnostican causas ni prueban desempeño operativo de EMACRUZ.</p>
+        </section>
+      </section>
+    </main>
+  </body>
+</html>

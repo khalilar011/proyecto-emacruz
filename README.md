@@ -12,6 +12,9 @@ Prototipo universitario para consultar programación **simulada** de recolecció
 - Visor sencillo de los tres mapas suministrados: barrios, unidades vecinales y plano municipal, con ampliación entre 75 % y 300 %.
 - Sin Leaflet, polígonos, filtros cartográficos, GPS, calles recorridas ni rutas oficiales.
 - Panel `/admin/` con Supabase Auth, PostgreSQL, RLS, historial y operaciones validadas.
+- Panel privado `/admin/mineria/` con descriptivos, siete gráficas, tasas sobre servicios programados y reglas Apriori.
+- Dos modos separados: 180 incidencias sintéticas reproducibles y el historial registrado del prototipo.
+- Motor único en Supabase Edge Functions para actualización manual y semanal, con resultados persistidos y RLS.
 - Un único respaldo JSON si Supabase no responde durante la carga inicial.
 - Tres mapas suministrados, conservados como referencias secundarias ampliables.
 
@@ -33,11 +36,13 @@ scripts/
 └── prepare_map_data.py
 supabase/
 ├── config.toml                                         # Auth remoto reproducible
+├── functions/                                          # Motor Apriori y endpoint privado
 ├── migrations/                                         # esquema RLS y catálogo
 └── tests/                                              # seguridad y flujo transaccional
 tests/
 web/
 ├── admin/                                               # acceso Auth + RLS
+│   └── mineria/                                         # dashboard privado de análisis
 ├── assets/maps/
 ├── data/distrito-2.json
 ├── data/incidencias.json
@@ -82,7 +87,7 @@ Los exportadores validan duplicados, campos incompletos, referencias, horarios, 
 El proyecto actual ya está configurado. Para reproducir la instalación en otro proyecto, sigue [docs/configurar-supabase.md](docs/configurar-supabase.md). En resumen:
 
 1. crea el proyecto Supabase;
-2. ejecuta `0001_alerta_ruta_schema.sql`, `0002_catalog.sql` y `security_checks.sql`;
+2. ejecuta las migraciones `0001`, `0002`, `0003` y después `security_checks.sql`;
 3. deshabilita el registro público y crea el primer usuario desde el Dashboard;
 4. autorízalo mediante `supabase/setup/authorize_first_admin.sql`;
 5. configura únicamente Project URL y publishable key en `web/config.js`;
@@ -100,6 +105,12 @@ No hay contraseñas ni claves privadas en el repositorio. La ruta `/admin/` es u
 6. pulsa **Publicar alerta**.
 
 La web pública recibe el cambio por Realtime o en la consulta periódica. El horario del Excel no cambia: la demora se muestra como información adicional. La tabla permite editar y retirar; retirar exige confirmación y conserva el historial.
+
+### Analizar incidencias desde el navegador
+
+Una cuenta incluida en `admin_users` puede abrir **Minería de datos** sin volver a iniciar sesión. El modo demostración genera 180 observaciones sintéticas con semilla fija sin insertarlas en `incidents`; el modo historial usa una fila actual por incidencia y conserva retiradas. El botón ejecuta Apriori en el servidor, guarda la corrida y sólo confirma el éxito después de persistirla.
+
+El cron de GitHub Actions invoca el mismo motor los lunes a las 07:00 UTC (03:00 en Bolivia). Su despliegue y el secreto compartido se configuran siguiendo [docs/mineria-datos.md](docs/mineria-datos.md). Las asociaciones son descriptivas, no causales, y las tasas usan servicios programados, no servicios efectivamente realizados.
 
 ## Respaldo manual de alertas
 
@@ -155,10 +166,13 @@ python -m unittest discover -s tests -p 'test_*.py' -v
 node tests/test_schedule.js
 node tests/test_incidents.js
 node tests/test_web_integration.js
+node tests/test_mining_engine.mjs
+node tests/test_mining_integration.mjs
 node --check web/app.js
 node --check web/map-viewer.js
 node --check web/supabase-data.js
 node --check web/admin/admin.js
+node --check web/admin/mineria/mining.js
 ```
 
 Las pruebas locales cubren consistencia Excel/JSON, cuatro servicios por barrio, los tres mapas del visor, límites de zoom, catálogo SQL con 104 tuplas cerradas, estructura RLS/RPC, respaldo manual, próxima recolección, alcance temporal y prioridad. `security_checks.sql` y `admin_flow_checks.sql` también fueron ejecutados satisfactoriamente en el proyecto real.

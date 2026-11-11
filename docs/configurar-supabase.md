@@ -1,6 +1,6 @@
 # Configurar Supabase para Alerta Ruta
 
-Estado verificado el 4 de noviembre de 2026: el repositorio está vinculado exclusivamente a `alerta-ruta-emacruz` (`isbjpdslwhpbqfhwxvqr`), las dos migraciones están aplicadas, Auth/RLS/RPC fueron comprobadas y existe un único administrador autorizado. Las instrucciones siguientes permiten auditar o reproducir la configuración sin publicar secretos.
+Estado verificado el 11 de noviembre de 2026: el repositorio está vinculado exclusivamente a `alerta-ruta-emacruz` (`isbjpdslwhpbqfhwxvqr`); las migraciones `0001`, `0002` y `0003`, Auth, RLS, RPC y la Edge Function `mining-analysis` fueron comprobadas contra el proyecto real. Existe un único administrador permanente; las cuentas temporales de validación fueron eliminadas. Las instrucciones siguientes permiten auditar o reproducir la configuración sin publicar secretos.
 
 ## 1. Crear el proyecto
 
@@ -37,7 +37,7 @@ En **Authentication → Providers → Email**:
 1. conserva habilitado el acceso con correo y contraseña;
 2. deshabilita **Allow new users to sign up**;
 3. no habilites acceso anónimo;
-4. en **URL Configuration**, establece como Site URL `https://khalilar011.github.io/proyecto-emacruz/admin/` y agrega esa URL y `http://localhost:8000/admin/` a Redirect URLs.
+4. en **URL Configuration**, establece como Site URL `https://khalilar011.github.io/proyecto-emacruz/admin/` y agrega también las rutas `/admin/` y `/admin/mineria/` de GitHub Pages y `http://localhost:8000` a Redirect URLs.
 
 El panel no incluye formulario de registro. La restricción real se aplica también en Auth y en las políticas RLS, no ocultando botones.
 
@@ -77,6 +77,12 @@ La clave pública está diseñada para el navegador y su alcance queda limitado 
 La comprobación ejecutada en el proyecto real creó una demora desde el navegador, la modificó, la mostró únicamente en Totai (UV 43), la retiró y confirmó el historial `CREATED → UPDATED → UPDATED → RETIRED`. La incidencia retirada permanece en el historial administrativo y ya no es legible por `anon`.
 
 La web consulta cambios mediante Supabase Realtime y, como respaldo de actualización, cada 60 segundos. Los vencimientos dejan de ser legibles para visitantes por RLS aunque el navegador no reciba un evento.
+
+## 7. Activar el módulo de minería
+
+Después de aplicar `0003_mining_analysis.sql`, despliega `supabase/functions/mining-analysis/` y configura `MINING_SCHEDULE_SECRET` en Supabase Edge Function Secrets y GitHub Actions. En el proyecto vinculado, los tres elementos quedaron configurados y validados el 11/11/2026. La función usa las claves privadas nuevas que Supabase inyecta como `SUPABASE_SECRET_KEYS`; no copies una clave secret a GitHub ni reactives `service_role` legacy.
+
+La secuencia detallada, las verificaciones manuales y el significado de `verify_jwt = false` están en [mineria-datos.md](mineria-datos.md). La función realiza su propia validación obligatoria de JWT administrativo o secreto del cron.
 
 ## Responsabilidades y alcance
 

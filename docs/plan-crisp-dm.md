@@ -22,3 +22,9 @@ La programación continúa derivándose del Excel inmutable y Supabase almacena 
 El vecino mantiene acceso anónimo de solo lectura a incidencias publicadas, simuladas, vigentes y no retiradas. El administrador usa correo/contraseña, debe figurar en `admin_users` y escribe solo mediante funciones PostgreSQL que vuelven a validar objetivo, servicio y ventana. RLS es el control efectivo; la ruta del panel no es secreta. El rol autorizado publica directamente en este prototipo: el flujo institucional operador/supervisor → administrador/comunicador con una aprobación separada queda pendiente de una historia futura.
 
 El visor de mapas no tiene capas, filtros ni selección territorial: solo cambia y amplía las imágenes de barrios, UV y plano municipal. No se infieren posiciones de camiones, GPS, calles recorridas ni polígonos exactos de barrios. Una suspensión prevalece sobre una demora; una demora prevalece sobre la ausencia de incidencias, que se comunica como `NORMAL` sin confirmar la operación real.
+
+## Extensión de modelado: asociaciones de incidencias
+
+La tercera extensión implementa Apriori como análisis asociativo, no como predicción de acumulación. La unidad es una incidencia única del prototipo y los ítems son barrio, camión simulado, día/turno programado, motivo, tipo y rango de demora estimada. Soporte, confianza y lift describen coocurrencias; no prueban causalidad ni cumplimiento operativo.
+
+El modo de demostración usa 180 incidencias sintéticas reproducibles y permanece separado de `incidents`. El modo historial usa la versión actual de cada incidencia registrada, incluidas las retiradas, sin multiplicarla por eventos de edición. Los servicios usados como denominador son ocurrencias **programadas** del calendario simulado, no recolecciones confirmadas. Arquitectura, fórmulas y límites: [mineria-datos.md](mineria-datos.md).
