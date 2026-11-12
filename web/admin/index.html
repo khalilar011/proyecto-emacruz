@@ -4,8 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="noindex,nofollow" />
-    <meta name="theme-color" content="#075f4b" />
+    <meta name="theme-color" content="#F1F5F7" />
     <title>Administración · Alerta Ruta</title>
+    <link rel="icon" type="image/png" href="../assets/brand/favicon.png" />
+    <script src="../theme.js"></script>
     <link rel="stylesheet" href="../styles.css" />
     <link rel="stylesheet" href="admin.css" />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js" integrity="sha384-GFr3yTh5lJznCbZfpTtXnwboFsxqtTQoeTZCRHhE0579KrRmlCzen5AA8ohaB5ug" crossorigin="anonymous" defer></script>
@@ -16,7 +18,7 @@
   </head>
   <body class="admin-body">
     <a class="skip-link" href="#admin-main">Saltar al contenido</a>
-    <header class="admin-header"><a class="brand" href="../"><span class="brand-icon" aria-hidden="true">AR</span><span><strong>Alerta Ruta</strong><small>Panel de administración</small></span></a><div><span id="session-user"></span><button id="logout" class="ghost-button" type="button" hidden>Cerrar sesión</button></div></header>
+    <header class="admin-header"><a class="brand" href="../"><span class="brand-icon"><img src="../assets/brand/alerta-ruta-mark.webp" alt="" width="52" height="52" /></span><span><strong>Alerta Ruta</strong><small>Panel de administración</small></span></a><div><span id="session-user"></span><button id="logout" class="ghost-button" type="button" hidden>Cerrar sesión</button><button class="theme-toggle" type="button" data-theme-toggle aria-label="Cambiar tema" aria-pressed="false"><svg class="sun-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.5"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg><svg class="moon-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.3 15.4A8.5 8.5 0 0 1 8.6 3.7a8.5 8.5 0 1 0 11.7 11.7Z"></path></svg><span class="visually-hidden">Cambiar tema</span></button></div></header>
     <main id="admin-main" class="admin-main">
       <aside class="academic-notice" role="note"><span aria-hidden="true">!</span><p><strong>Simulación académica — no es un sistema oficial de EMACRUZ.</strong> Toda incidencia publicada desde aquí se identifica como simulada.</p></aside>
 

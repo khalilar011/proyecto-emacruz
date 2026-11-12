@@ -4,8 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Alerta Ruta: consulta académica de horarios simulados e incidencias manuales del Distrito Municipal N.º 2." />
-    <meta name="theme-color" content="#075f4b" />
+    <meta name="theme-color" content="#F1F5F7" />
     <title>Alerta Ruta · Distrito Municipal N.º 2</title>
+    <link rel="icon" type="image/png" href="assets/brand/favicon.png" />
+    <script src="theme.js"></script>
     <link rel="stylesheet" href="styles.css" />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js" integrity="sha384-GFr3yTh5lJznCbZfpTtXnwboFsxqtTQoeTZCRHhE0579KrRmlCzen5AA8ohaB5ug" crossorigin="anonymous" defer></script>
     <script src="config.js" defer></script>
@@ -18,25 +20,28 @@
   <body>
     <a class="skip-link" href="#consulta">Saltar a la consulta</a>
     <header class="site-header">
-      <a class="brand" href="#inicio" aria-label="Alerta Ruta, inicio"><span class="brand-icon" aria-hidden="true">AR</span><span><strong>Alerta Ruta</strong><small>Distrito Municipal N.º 2</small></span></a>
-      <nav aria-label="Navegación principal"><a href="#consulta">Consulta</a><a href="#mapa">Mapa</a><a href="#informacion">Información</a><a href="admin/">Administración</a></nav>
+      <a class="brand" href="#inicio" aria-label="Alerta Ruta, inicio"><span class="brand-icon"><img src="assets/brand/alerta-ruta-mark.webp" alt="" width="52" height="52" /></span><span><strong>Alerta Ruta</strong><small>Sistema inteligente de alertas</small></span></a>
+      <div class="header-actions">
+        <nav aria-label="Navegación principal"><a href="#consulta">Consulta</a><a href="#mapa">Mapa</a><a href="#informacion">Información</a><a href="admin/">Administración</a></nav>
+        <button class="theme-toggle" type="button" data-theme-toggle aria-label="Cambiar tema" aria-pressed="false"><svg class="sun-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.5"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg><svg class="moon-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.3 15.4A8.5 8.5 0 0 1 8.6 3.7a8.5 8.5 0 1 0 11.7 11.7Z"></path></svg><span class="visually-hidden">Cambiar tema</span></button>
+      </div>
     </header>
 
     <main id="inicio">
       <section class="hero" aria-labelledby="hero-title">
-        <div class="hero-copy"><p class="eyebrow">Santa Cruz de la Sierra · Distrito 2</p><h1 id="hero-title">Tu próxima recolección, más fácil de consultar.</h1><p>Busca tu barrio para ver la programación académica, el camión simulado y las incidencias manuales vigentes.</p><a class="primary-button" href="#consulta">Consultar mi barrio</a></div>
+        <div class="hero-visual" aria-hidden="true"><picture><source media="(max-width: 720px)" srcset="assets/illustrations/santa-cruz-smart-city-960.webp" /><img src="assets/illustrations/santa-cruz-smart-city.webp" alt="" width="1920" height="1076" fetchpriority="high" /></picture></div>
+        <div class="hero-copy"><p class="eyebrow">Santa Cruz de la Sierra · Distrito 2</p><h1 id="hero-title">Tu próxima recolección, <span>más fácil de consultar.</span></h1><p>Busca tu barrio para ver la programación académica, el camión simulado y las incidencias manuales vigentes.</p><a class="primary-button" href="#consulta">Consultar mi barrio <span aria-hidden="true">→</span></a></div>
         <div class="hero-stat" aria-label="Cobertura del prototipo"><span id="barrio-count">—</span><strong>barrios</strong><small>del Distrito Municipal N.º 2</small></div>
+        <div class="hero-caption" aria-hidden="true"><span></span><small>Catedral Metropolitana · Plaza 24 de Septiembre</small></div>
       </section>
 
       <aside class="academic-notice" role="note"><span aria-hidden="true">!</span><p><strong>Simulación académica — no es un aviso oficial.</strong> Los horarios, camiones y estados son datos de demostración; no confirman la operación de EMACRUZ en tiempo real.</p></aside>
 
       <section id="consulta" class="section consultation" aria-labelledby="consulta-title">
-        <div class="section-heading"><p class="eyebrow">Consulta vecinal</p><h2 id="consulta-title">Encuentra tu barrio</h2><p>Escribe parte del nombre o elígelo en la lista. No necesitas conocer tu unidad vecinal.</p></div>
+        <div class="section-heading consultation-heading"><div><p class="eyebrow">Consulta vecinal</p><h2 id="consulta-title">Encuentra tu barrio</h2></div><p>Escribe parte del nombre o elígelo en la lista. No necesitas conocer tu unidad vecinal.</p></div>
         <div class="search-panel">
-          <label for="barrio-search">Buscar por nombre</label>
-          <div class="search-input"><span aria-hidden="true">⌕</span><input id="barrio-search" type="search" placeholder="Ej.: Chacarrilla" autocomplete="off" disabled /></div>
-          <label for="barrio-select">Barrios disponibles</label>
-          <select id="barrio-select" disabled><option>Cargando datos…</option></select>
+          <div class="search-field"><label for="barrio-search">Buscar por nombre</label><div class="search-input"><span aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"></circle><path d="m16 16 4 4"></path></svg></span><input id="barrio-search" type="search" placeholder="Ej.: Chacarrilla" autocomplete="off" disabled /></div></div>
+          <div class="search-field"><label for="barrio-select">Barrios disponibles</label><select id="barrio-select" disabled><option>Cargando datos…</option></select></div>
           <p id="search-status" class="helper" role="status" aria-live="polite">Leyendo la base del Distrito 2…</p>
         </div>
 
@@ -71,7 +76,7 @@
       </section>
     </main>
 
-    <footer><div><strong>Alerta Ruta</strong><p>Prototipo universitario · Distrito Municipal N.º 2</p></div><p>Fuente: <code>Distrito_2_horarios_SIMULADOS.xlsx</code>. Vigencia operativa no acreditada.</p></footer>
+    <footer><div class="footer-brand"><img src="assets/brand/alerta-ruta-lockup.webp" alt="Alerta Ruta — Sistema inteligente de alertas" width="240" height="120" /><div><strong>Plataforma urbana académica</strong><p>Prototipo universitario · Distrito Municipal N.º 2</p></div></div><p>Fuente: <code>Distrito_2_horarios_SIMULADOS.xlsx</code>. Vigencia operativa no acreditada.</p></footer>
 
     <dialog id="map-dialog" aria-labelledby="dialog-title"><div class="dialog-header"><div><p class="eyebrow">Visor de mapas</p><h2 id="dialog-title">Barrios del Distrito 2</h2></div><button id="close-map" class="icon-button" type="button" aria-label="Cerrar mapa">×</button></div><div class="zoom-controls" aria-label="Controles de ampliación"><button type="button" data-zoom="out" aria-label="Alejar">−</button><button type="button" data-zoom="reset">100%</button><button type="button" data-zoom="in" aria-label="Acercar">+</button></div><div class="dialog-map"><img id="dialog-image" src="assets/maps/distrito-2-barrios.webp" alt="Mapa ampliado del Distrito 2" /></div></dialog>
   </body>

@@ -14,6 +14,7 @@ const elements = Object.fromEntries([
 let client;
 let charts = {};
 let catalog = { barrios: [], servicios: [] };
+let lastRenderedRun = null;
 
 function setMessage(message, error = false) {
   elements.analysis_message.textContent = message;
@@ -68,8 +69,20 @@ function showModeNotice(mode, recordCount = null) {
   elements.mode_notice.append(strong, detail);
 }
 
+function chartTheme() {
+  const styles = getComputedStyle(document.documentElement);
+  const value = (name) => styles.getPropertyValue(name).trim();
+  return {
+    text: value("--chart-text") || "#5f7480",
+    grid: value("--chart-grid") || "rgba(18, 59, 80, .12)",
+    fill: value("--chart-fill") || "rgba(8, 127, 102, .74)",
+    line: value("--chart-line") || "#087f66",
+  };
+}
+
 function chartConfig(type, rows, options = {}) {
-  const colors = ["#087557", "#e9a825", "#2376a8", "#8a5da8", "#c65f4b", "#5f8f73", "#c28435"];
+  const theme = chartTheme();
+  const colors = [theme.line, "#f4b942", "#3d91bf", "#9b74bd", "#d36c58", "#6fa68a", "#d09443"];
   return {
     type,
     data: {
@@ -77,10 +90,10 @@ function chartConfig(type, rows, options = {}) {
       datasets: [{
         label: "Incidencias",
         data: rows.map((row) => row.count),
-        backgroundColor: type === "doughnut" ? rows.map((_, index) => colors[index % colors.length]) : "rgba(8, 117, 87, .76)",
-        borderColor: type === "line" ? "#087557" : "rgba(7, 95, 75, .9)",
+        backgroundColor: type === "doughnut" ? rows.map((_, index) => colors[index % colors.length]) : theme.fill,
+        borderColor: theme.line,
         borderWidth: type === "line" ? 3 : 1,
-        pointBackgroundColor: "#087557",
+        pointBackgroundColor: theme.line,
         tension: .25,
         fill: type === "line",
       }],
@@ -90,12 +103,12 @@ function chartConfig(type, rows, options = {}) {
       maintainAspectRatio: false,
       indexAxis: options.horizontal ? "y" : "x",
       plugins: {
-        legend: { display: type === "doughnut", position: "bottom" },
+        legend: { display: type === "doughnut", position: "bottom", labels: { color: theme.text } },
         tooltip: { callbacks: { label: (context) => `${context.label}: ${context.raw} incidencia(s)` } },
       },
       scales: type === "doughnut" ? {} : {
-        y: options.horizontal ? { beginAtZero: true, ticks: { precision: 0 } } : { beginAtZero: true, ticks: { precision: 0 } },
-        x: options.horizontal ? { beginAtZero: true, ticks: { precision: 0 } } : {},
+        y: { beginAtZero: true, ticks: { precision: 0, color: theme.text }, grid: { color: theme.grid } },
+        x: { beginAtZero: options.horizontal, ticks: { precision: options.horizontal ? 0 : undefined, color: theme.text }, grid: { color: theme.grid } },
       },
     },
   };
@@ -182,6 +195,7 @@ function renderFindings(run) {
 }
 
 function renderRun(run) {
+  lastRenderedRun = run;
   const indicators = run.indicators || {};
   const chartData = run.chart_data || {};
   showModeNotice(run.mode, run.record_count);
@@ -334,6 +348,9 @@ elements.data_mode.addEventListener("change", loadLatest);
 elements.logout.addEventListener("click", async () => {
   await adminCore.signOut(client);
   window.location.replace("../");
+});
+window.addEventListener("alerta-ruta:theme-change", () => {
+  if (lastRenderedRun) renderRun(lastRenderedRun);
 });
 
 initialize();

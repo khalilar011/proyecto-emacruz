@@ -17,6 +17,7 @@ Prototipo universitario para consultar programación **simulada** de recolecció
 - Motor único en Supabase Edge Functions para actualización manual y semanal, con resultados persistidos y RLS.
 - Un único respaldo JSON si Supabase no responde durante la carga inicial.
 - Tres mapas suministrados, conservados como referencias secundarias ampliables.
+- Identidad visual propia con recursos locales de Alerta Ruta y temas claro/oscuro persistentes en las tres rutas.
 
 La integración está conectada al proyecto Supabase `alerta-ruta-emacruz` mediante su URL y publishable key pública. Las migraciones, RLS, Auth, RPC e historial fueron comprobados contra el proyecto real; no se publica ninguna clave secreta.
 
@@ -43,6 +44,8 @@ tests/
 web/
 ├── admin/                                               # acceso Auth + RLS
 │   └── mineria/                                         # dashboard privado de análisis
+├── assets/brand/                                        # logo oficial optimizado y favicon
+├── assets/illustrations/                                # portada urbana original optimizada
 ├── assets/maps/
 ├── data/distrito-2.json
 ├── data/incidencias.json
@@ -50,6 +53,7 @@ web/
 ├── app.js
 ├── incidents.js
 ├── map-viewer.js
+├── theme.js                                              # preferencia visual local, sin lógica de negocio
 ├── schedule-utils.js
 └── supabase-data.js
 ```
@@ -168,7 +172,9 @@ node tests/test_incidents.js
 node tests/test_web_integration.js
 node tests/test_mining_engine.mjs
 node tests/test_mining_integration.mjs
+node tests/test_visual_regression.js
 node --check web/app.js
+node --check web/theme.js
 node --check web/map-viewer.js
 node --check web/supabase-data.js
 node --check web/admin/admin.js
