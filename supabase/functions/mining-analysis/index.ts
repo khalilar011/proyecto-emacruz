@@ -54,7 +54,17 @@ function bearerToken(request: Request) {
 }
 
 function validDate(value: unknown) {
-  return value === null || value === undefined || value === "" || /^\d{4}-\d{2}-\d{2}$/.test(String(value));
+  if (value === null || value === undefined || value === "") return true;
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value));
+  if (!match) return false;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  if (year < 1 || month < 1 || month > 12 || day < 1) return false;
+  const date = new Date(0);
+  date.setUTCHours(0, 0, 0, 0);
+  date.setUTCFullYear(year, month - 1, day);
+  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
 }
 
 function cleanFilters(raw: Record<string, unknown> = {}) {
@@ -127,6 +137,9 @@ Deno.serve(async (request: Request) => {
     filters = cleanFilters(payload.filters || {});
   } catch (error) {
     return json(request, { error: error instanceof Error ? error.message : "Filtros inválidos" }, 400);
+  }
+  if (mode === "demo" && Boolean(filters.startDate) !== Boolean(filters.endDate)) {
+    return json(request, { error: "Completa las fechas Desde y Hasta, o deja ambas vacías para usar el periodo predeterminado" }, 400);
   }
 
   const staleBefore = new Date(Date.now() - (20 * 60 * 1000)).toISOString();

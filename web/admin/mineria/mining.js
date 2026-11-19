@@ -3,6 +3,7 @@
 const config = window.ALERTA_RUTA_CONFIG || {};
 const adminCore = window.AlertaRutaAdminCore;
 const miningView = window.AlertaRutaMiningView;
+const DEFAULT_DEMO_PERIOD = { start: "2005-01-01", end: "2026-11-19" };
 const elements = Object.fromEntries([
   "setup-panel", "access-panel", "access-message", "dashboard", "session-user", "logout",
   "refresh-analysis", "analysis-message", "mode-notice", "data-mode", "period-start", "period-end",
@@ -241,8 +242,8 @@ function renderRun(run) {
   showModeNotice(run.mode, run.record_count, indicators.synthetic_records_generated ?? run.record_count);
   renderRunMetadata(run);
   const unfilteredDemo = demoMode
-    && run.filters?.startDate === run.period_start
-    && run.filters?.endDate === run.period_end
+    && run.period_start === DEFAULT_DEMO_PERIOD.start
+    && run.period_end === DEFAULT_DEMO_PERIOD.end
     && !run.filters?.neighborhoodId
     && !run.filters?.truckId;
   elements.period_start.value = unfilteredDemo ? "" : (run.filters?.startDate || "");
@@ -320,6 +321,9 @@ async function loadLatest() {
 function requestBody() {
   const startDate = elements.period_start.value || null;
   const endDate = elements.period_end.value || null;
+  if (elements.data_mode.value === "demo" && Boolean(startDate) !== Boolean(endDate)) {
+    throw new Error("Completa las fechas Desde y Hasta, o deja ambas vacías para usar el periodo predeterminado.");
+  }
   if (startDate && endDate && startDate > endDate) throw new Error("La fecha inicial debe ser anterior o igual a la final.");
   return {
     mode: elements.data_mode.value,

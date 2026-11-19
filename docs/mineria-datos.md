@@ -96,7 +96,7 @@ El denominador es programación simulada, no evidencia de servicio realizado. La
 
 ### Demostración académica: un millón de registros
 
-El servidor recorre exactamente 1.000.000 de registros con semilla fija `20261111`, periodo 1 de enero de 2005 a 19 de noviembre de 2026 y valores del catálogo. El primer registro usa el inicio y el último usa el final, por lo que ambos extremos quedan cubiertos. Cada registro recibe un ID secuencial único, desde `DEMO-0000001` hasta `DEMO-1000000`, pero se descarta después de actualizar los acumuladores. No se inserta en `incidents` ni se entrega al navegador.
+El servidor recorre exactamente 1.000.000 de registros con semilla fija `20261111` y valores del catálogo para cada intervalo inclusivo solicitado. El millón se genera directamente dentro de ese intervalo: no se filtra el conjunto de 2005–2026. Si Desde y Hasta están vacíos se usa el periodo predeterminado 1 de enero de 2005 a 19 de noviembre de 2026; ambos campos deben completarse juntos. El primer registro usa el inicio y el último usa el final, incluso si ambos representan el mismo día. Cada registro recibe un ID secuencial único, desde `DEMO-0000001` hasta `DEMO-1000000`, pero se descarta después de actualizar los acumuladores. No se inserta en `incidents` ni se entrega al navegador.
 
 Distribución reproducible:
 
@@ -116,7 +116,9 @@ Se diseñaron coocurrencias reproducibles para comprobar el método, entre ellas
 
 No se escriben reglas ni métricas prefabricadas: la prueba exige que Apriori recupere la asociación de `SIM-C01` y falla mecánica a partir de las transacciones generadas. La interfaz mantiene el rótulo **DATOS SINTÉTICOS — DEMOSTRACIÓN ACADÉMICA**.
 
-La evolución temporal se agrupa por año para presentar de forma legible 22 puntos, de 2005 a 2026. `scripts/export_synthetic_demo.mjs` recorre nuevamente los registros individuales, valida IDs, campos y extremos, y calcula una huella SHA-256 sin conservar el millón en memoria. Con `--output /ruta/archivo.ndjson` también permite una exportación local en flujo; ese archivo voluminoso no se incorpora al repositorio.
+La evolución temporal se agrupa por día para intervalos de hasta 31 días, por mes para intervalos de hasta 366 días y por año para periodos mayores. Así, un día o dos días no reutilizan una serie anual anterior. `scripts/export_synthetic_demo.mjs` recorre nuevamente los registros individuales del periodo predeterminado, valida IDs, campos y extremos, y calcula una huella SHA-256 sin conservar el millón en memoria. Con `--output /ruta/archivo.ndjson` también permite una exportación local en flujo; ese archivo voluminoso no se incorpora al repositorio.
+
+Para una validación remota controlada sin exponer credenciales del navegador, `scripts/prepare_demo_run_sql.mjs --start AAAA-MM-DD --end AAAA-MM-DD --output /tmp/corrida.sql` calcula el millón con el mismo motor y prepara una única fila agregada. El SQL temporal no escribe en `incidents` ni `incident_history`; debe aplicarse únicamente después de un dictamen `APROBADO` y eliminarse al terminar.
 
 ### Historial registrado del prototipo
 
@@ -128,7 +130,7 @@ Limitación vigente: el esquema distingue retiradas mediante `retired_at`, pero 
 
 1. El administrador entra en `/admin/` y abre **Análisis exploratorio**. La sesión se conserva en el mismo origen.
 2. El módulo vuelve a comprobar Auth y `admin_users`.
-3. **Actualizar análisis** se desactiva y muestra “Calculando análisis…”.
+3. En Demostración, el administrador elige Desde y Hasta, o deja ambos campos vacíos para usar el periodo predeterminado. **Actualizar análisis** se desactiva y muestra “Calculando análisis…”.
 4. La Edge Function valida la sesión, crea una ejecución `RUNNING`, calcula y guarda el resultado.
 5. Solo después de guardar cambia a `COMPLETED` y el navegador muestra la confirmación y los datos nuevos.
 6. Un índice parcial impide dos ejecuciones simultáneas del mismo modo. Una ejecución abandonada por más de 20 minutos se marca `FAILED` antes de reintentar.

@@ -60,6 +60,10 @@ assert.doesNotMatch(edgeFunction, /sb_secret_[A-Za-z0-9_-]+/);
 assert.match(miningView, /timeZone: "America\/La_Paz"/);
 assert.match(miningView, /Sin registros para el periodo/);
 assert.match(miningFrontend, /No se calculan tasas operativas/);
+assert.match(miningFrontend, /Completa las fechas Desde y Hasta/);
+assert.match(miningFrontend, /DEFAULT_DEMO_PERIOD/);
+assert.match(edgeFunction, /Boolean\(filters\.startDate\) !== Boolean\(filters\.endDate\)/);
+assert.match(edgeFunction, /return json\(request, \{ error: .* \}, 400\)/);
 
 assert.match(migration, /enable row level security/);
 assert.match(migration, /revoke all on public\.mining_analysis_runs from public, anon, authenticated/);

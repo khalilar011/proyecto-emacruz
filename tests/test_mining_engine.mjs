@@ -64,6 +64,19 @@ assert.ok(demoOne.incidents.every((row) => row.is_simulation));
 assert.equal(demoOne.incidents[0].analysis_date, "2005-01-01");
 assert.equal(demoOne.incidents.at(-1).analysis_date, "2026-11-19");
 
+const customDemoOne = createDemoIncidents(catalog, {
+  seed: 20261111,
+  count: 180,
+  period: { start: "2037-02-01", end: "2037-02-28" },
+});
+const customDemoTwo = createDemoIncidents(catalog, {
+  seed: 20261111,
+  count: 180,
+  period: { start: "2037-02-01", end: "2037-02-28" },
+});
+assert.deepEqual(customDemoOne, customDemoTwo, "Igual semilla e intervalo deben producir el mismo conjunto");
+assert.ok(customDemoOne.incidents.every((row) => row.analysis_date >= "2037-02-01" && row.analysis_date <= "2037-02-28"));
+
 const demoAnalysis = analyzeIncidents({
   incidents: demoOne.incidents,
   catalog,
@@ -128,13 +141,53 @@ assert.ok(million.rules.some((rule) => (
   && [...rule.antecedent, ...rule.consequent].includes("MOTIVO=FALLA_MECANICA")
 )));
 
-const emptyDemo = analyzeDemoDataset({
+const requiredIntervals = [
+  { start: "2015-01-01", end: "2020-12-31", buckets: 6 },
+  { start: "2018-01-01", end: "2026-12-31", buckets: 9 },
+  { start: "2037-02-01", end: "2037-02-28", buckets: 28 },
+  { start: "2040-06-10", end: "2040-06-11", buckets: 2 },
+  { start: "2040-06-10", end: "2040-06-10", buckets: 1 },
+];
+for (const interval of requiredIntervals) {
+  const result = analyzeDemoDataset({
+    catalog,
+    seed: 20261111,
+    count: 1_000_000,
+    filters: { startDate: interval.start, endDate: interval.end },
+  });
+  assert.equal(result.record_count, 1_000_000, `${interval.start}–${interval.end} debe analizar un millón`);
+  assert.equal(result.transaction_count, 1_000_000);
+  assert.deepEqual(result.period, { start: interval.start, end: interval.end });
+  assert.equal(result.indicators.synthetic_records_generated, 1_000_000);
+  assert.equal(result.indicators.synthetic_unique_ids, 1_000_000);
+  assert.equal(result.indicators.synthetic_first_date, interval.start);
+  assert.equal(result.indicators.synthetic_last_date, interval.end);
+  assert.equal(result.indicators.synthetic_out_of_range_records, 0);
+  assert.equal(result.charts.timeline.length, interval.buckets);
+  assert.equal(result.charts.timeline.reduce((sum, row) => sum + row.count, 0), 1_000_000);
+  assert.equal(result.charts.reasons.reduce((sum, row) => sum + row.count, 0), 1_000_000);
+  assert.equal(Object.keys(result.charts).length, 7);
+  assert.ok(result.rules.length > 0);
+  for (const rule of result.rules) {
+    assert.ok(Math.abs(rule.support - (rule.support_count / 1_000_000)) < 1e-12);
+  }
+}
+
+assert.throws(() => analyzeDemoDataset({
   catalog,
-  count: 1_000,
-  filters: { startDate: "2027-01-01", endDate: "2027-01-31" },
-});
-assert.equal(emptyDemo.record_count, 0);
-assert.deepEqual(emptyDemo.period, { start: null, end: null }, "Un resultado vacío no debe inventar un periodo");
+  count: 10,
+  filters: { startDate: "2026-02-29", endDate: "2026-03-01" },
+}), /fechas válidas/);
+assert.throws(() => analyzeDemoDataset({
+  catalog,
+  count: 10,
+  filters: { startDate: "2026-03-02", endDate: "2026-03-01" },
+}), /Desde no puede ser posterior/);
+assert.throws(() => analyzeDemoDataset({
+  catalog,
+  count: 10,
+  filters: { startDate: "2026-03-01" },
+}), /Completa las fechas Desde y Hasta/);
 
 const duplicate = {
   id: "INC-1",

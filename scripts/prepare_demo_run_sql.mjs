@@ -8,15 +8,24 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const outputIndex = process.argv.indexOf("--output");
 const outputPath = outputIndex >= 0 ? path.resolve(process.argv[outputIndex + 1] || "") : null;
 if (!outputPath) throw new Error("Usa --output con una ruta temporal para el SQL agregado");
+const argument = (name) => {
+  const index = process.argv.indexOf(name);
+  return index >= 0 ? process.argv[index + 1] || null : null;
+};
+const startDate = argument("--start");
+const endDate = argument("--end");
+if (Boolean(startDate) !== Boolean(endDate)) throw new Error("--start y --end deben usarse juntos");
+const filters = startDate ? { startDate, endDate } : {};
 
 const catalog = JSON.parse(fs.readFileSync(path.join(root, "web/data/distrito-2.json"), "utf8"));
 const startedAt = new Date().toISOString();
-const analysis = analyzeDemoDataset({ catalog, seed: 20261111, count: 1_000_000 });
+const analysis = analyzeDemoDataset({ catalog, filters, seed: 20261111, count: 1_000_000 });
 const completedAt = new Date().toISOString();
 
 assert.equal(analysis.record_count, 1_000_000);
 assert.equal(analysis.transaction_count, 1_000_000);
-assert.deepEqual(analysis.period, { start: "2005-01-01", end: "2026-11-19" });
+if (startDate) assert.deepEqual(analysis.period, { start: startDate, end: endDate });
+else assert.deepEqual(analysis.period, { start: "2005-01-01", end: "2026-11-19" });
 assert.equal(Object.keys(analysis.charts).length, 7);
 assert.ok(analysis.rules.length > 0);
 
@@ -31,7 +40,7 @@ insert into public.mining_analysis_runs (
 ) values (
   'demo',
   'manual',
-  ${text("Un millón de registros sintéticos reproducibles procesados por el motor del proyecto desde el entorno seguro; no se insertan en public.incidents.")},
+  ${text("Validación agregada de un millón de registros sintéticos reproducibles procesados por el motor del proyecto desde el entorno seguro; no se insertan en public.incidents.")},
   '${analysis.period.start}',
   '${analysis.period.end}',
   ${analysis.record_count},

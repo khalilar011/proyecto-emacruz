@@ -6,6 +6,8 @@ const REASON_LABELS = {
   OTRO: "Otro",
 };
 const DURATION_RANGES = ["1-15", "16-30", "31-60", "61-120", "MAS_DE_120"];
+const DEFAULT_DEMO_PERIOD = Object.freeze({ start: "2005-01-01", end: "2026-11-19" });
+const MILLISECONDS_PER_DAY = 86_400_000;
 
 function unique(values) {
   return [...new Set(values.filter((value) => value !== null && value !== undefined && value !== ""))];
@@ -43,13 +45,24 @@ function localDate(value) {
 }
 
 function parseDateOnly(value) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(value || ""))) return null;
-  const date = new Date(`${value}T00:00:00Z`);
-  return Number.isNaN(date.getTime()) ? null : date;
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value || ""));
+  if (!match) return null;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  if (year < 1 || month < 1 || month > 12 || day < 1) return null;
+  const date = new Date(0);
+  date.setUTCHours(0, 0, 0, 0);
+  date.setUTCFullYear(year, month - 1, day);
+  if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) return null;
+  return date;
 }
 
 function formatDateOnly(date) {
-  return date.toISOString().slice(0, 10);
+  const year = String(date.getUTCFullYear()).padStart(4, "0");
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(date.getUTCDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
 function addDays(value, amount) {
@@ -59,8 +72,36 @@ function addDays(value, amount) {
 }
 
 function isoDay(dateOnly) {
-  const day = parseDateOnly(dateOnly).getUTCDay();
-  return day === 0 ? 7 : day;
+  const ordinal = dateOrdinal(dateOnly);
+  if (ordinal === null) throw new Error("Fecha inválida");
+  return isoDayFromOrdinal(ordinal);
+}
+
+function dateOrdinal(dateOnly) {
+  const parsed = parseDateOnly(dateOnly);
+  return parsed ? Math.floor(parsed.getTime() / MILLISECONDS_PER_DAY) : null;
+}
+
+function dateFromOrdinal(ordinal) {
+  return formatDateOnly(new Date(ordinal * MILLISECONDS_PER_DAY));
+}
+
+function isoDayFromOrdinal(ordinal) {
+  return ((((ordinal + 3) % 7) + 7) % 7) + 1;
+}
+
+function inclusiveDayCount(start, end) {
+  const startOrdinal = dateOrdinal(start);
+  const endOrdinal = dateOrdinal(end);
+  if (startOrdinal === null || endOrdinal === null || startOrdinal > endOrdinal) return 0;
+  return (endOrdinal - startOrdinal) + 1;
+}
+
+function demoTimelineKey(dateOnly, start, end) {
+  const days = inclusiveDayCount(start, end);
+  if (days && days <= 31) return dateOnly;
+  if (days && days <= 366) return dateOnly.slice(0, 7);
+  return dateOnly.slice(0, 4);
 }
 
 function eachDate(start, end) {
@@ -295,15 +336,17 @@ function expectedServiceOccurrences(services, bounds, filters = {}) {
   const countsByTruck = new Map();
   let total = 0;
   if (!bounds.start || !bounds.end) return { total, countsByNeighborhood, countsByTruck };
-  for (const date of eachDate(bounds.start, bounds.end)) {
-    for (const service of services) {
-      if (service.day !== isoDay(date)) continue;
-      if (filters.neighborhoodId && service.neighborhoodId !== filters.neighborhoodId) continue;
-      if (filters.truckId && service.truckId !== filters.truckId) continue;
-      total += 1;
-      countsByNeighborhood.set(service.neighborhoodId, (countsByNeighborhood.get(service.neighborhoodId) || 0) + 1);
-      countsByTruck.set(service.truckId, (countsByTruck.get(service.truckId) || 0) + 1);
-    }
+  const days = inclusiveDayCount(bounds.start, bounds.end);
+  const firstDay = isoDay(bounds.start);
+  for (const service of services) {
+    if (filters.neighborhoodId && service.neighborhoodId !== filters.neighborhoodId) continue;
+    if (filters.truckId && service.truckId !== filters.truckId) continue;
+    const offset = (service.day - firstDay + 7) % 7;
+    const occurrences = offset < days ? 1 + Math.floor((days - 1 - offset) / 7) : 0;
+    if (!occurrences) continue;
+    total += occurrences;
+    countsByNeighborhood.set(service.neighborhoodId, (countsByNeighborhood.get(service.neighborhoodId) || 0) + occurrences);
+    countsByTruck.set(service.truckId, (countsByTruck.get(service.truckId) || 0) + occurrences);
   }
   return { total, countsByNeighborhood, countsByTruck };
 }
@@ -394,7 +437,7 @@ function analyzeIncidentIterable({ incidents, catalog, mode = "history", filters
     }
     if (incidentDate) {
       let timelineKey;
-      if (mode === "demo") timelineKey = incidentDate.slice(0, 4);
+      if (mode === "demo") timelineKey = demoTimelineKey(incidentDate, filters.startDate, filters.endDate);
       else {
         timelineKey = weekByDate.get(incidentDate);
         if (!timelineKey) {
@@ -508,17 +551,21 @@ function isoAt(date, time) {
 }
 
 function demoOptions(options = {}, defaultCount = 1_000_000) {
+  const period = options.period || DEFAULT_DEMO_PERIOD;
+  if (!parseDateOnly(period.start) || !parseDateOnly(period.end) || period.start > period.end) {
+    throw new Error("El periodo sintético debe contener fechas válidas y Desde no puede ser posterior a Hasta");
+  }
   return {
     count: Math.round(clampNumber(options.count, defaultCount, 1, 1_000_000)),
     seed: Number(options.seed ?? 20261111),
-    period: { start: "2005-01-01", end: "2026-11-19" },
+    period: { start: period.start, end: period.end },
   };
 }
 
-function demoDateAt(index, count, dates, random) {
-  if (index === 0) return dates[0];
-  if (index === count - 1) return dates.at(-1);
-  return dates[1 + Math.floor(random() * (dates.length - 2))];
+function demoDateOrdinalAt(index, count, startOrdinal, days, random) {
+  if (index === 0 || days === 1) return startOrdinal;
+  if (index === count - 1) return startOrdinal + days - 1;
+  return startOrdinal + Math.floor(random() * days);
 }
 
 function* demoIncidentSequence(catalog, options = {}) {
@@ -528,7 +575,8 @@ function* demoIncidentSequence(catalog, options = {}) {
   const services = (catalog.servicios || catalog.services || []).map(normalizeService);
   if (services.length !== 104) throw new Error("El conjunto sintético requiere exactamente 104 servicios activos");
   const servicesByDay = new Map(DAY_NAMES.map((_, index) => [index + 1, services.filter((service) => service.day === index + 1)]));
-  const dates = eachDate(configuration.period.start, configuration.period.end);
+  const periodStartOrdinal = dateOrdinal(configuration.period.start);
+  const periodDays = inclusiveDayCount(configuration.period.start, configuration.period.end);
   const compatibleByService = new Map(services.map((service) => [
     service.id,
     services.filter((candidate) => (
@@ -538,8 +586,9 @@ function* demoIncidentSequence(catalog, options = {}) {
     )),
   ]));
   for (let index = 0; index < count; index += 1) {
-    const date = demoDateAt(index, count, dates, random);
-    const dayServices = servicesByDay.get(isoDay(date));
+    const ordinal = demoDateOrdinalAt(index, count, periodStartOrdinal, periodDays, random);
+    const date = dateFromOrdinal(ordinal);
+    const dayServices = servicesByDay.get(isoDayFromOrdinal(ordinal));
     const primary = dayServices[Math.floor(random() * dayServices.length)];
     const affected = [primary];
     if (random() < 0.18) {
@@ -596,11 +645,17 @@ function createDemoIncidents(catalog, options = {}) {
 }
 
 function analyzeDemoDataset({ catalog, filters = {}, parameters = {}, seed = 20261111, count = 1_000_000 }) {
-  const configuration = demoOptions({ seed, count });
+  const hasStart = Boolean(filters.startDate);
+  const hasEnd = Boolean(filters.endDate);
+  if (hasStart !== hasEnd) throw new Error("Completa las fechas Desde y Hasta, o deja ambas vacías para usar el periodo predeterminado");
+  const selectedPeriod = hasStart
+    ? { start: filters.startDate, end: filters.endDate }
+    : DEFAULT_DEMO_PERIOD;
+  const configuration = demoOptions({ seed, count, period: selectedPeriod });
   const appliedFilters = {
     ...filters,
-    startDate: filters.startDate || configuration.period.start,
-    endDate: filters.endDate || configuration.period.end,
+    startDate: configuration.period.start,
+    endDate: configuration.period.end,
   };
   const started = typeof performance !== "undefined" ? performance.now() : Date.now();
   const services = (catalog.servicios || catalog.services || []).map(normalizeService);
@@ -611,6 +666,7 @@ function analyzeDemoDataset({ catalog, filters = {}, parameters = {}, seed = 202
   }
 
   const neighborhoodNames = new Map(neighborhoods.map((neighborhood) => [neighborhood.id, neighborhood.name]));
+  const serviceIndexById = new Map(services.map((service, index) => [service.id, index]));
   const compatibleIndexes = services.map((service, primaryIndex) => services
     .map((candidate, candidateIndex) => ({ candidate, candidateIndex }))
     .filter(({ candidate, candidateIndex }) => (
@@ -660,7 +716,8 @@ function analyzeDemoDataset({ catalog, filters = {}, parameters = {}, seed = 202
 
   const reasonCodes = ["LLUVIA", "FALLA_MECANICA", "PROBLEMA_TECNICO", "OTRO"];
   const random = seededRandom(configuration.seed);
-  const dates = eachDate(configuration.period.start, configuration.period.end);
+  const periodStartOrdinal = dateOrdinal(configuration.period.start);
+  const periodDays = inclusiveDayCount(configuration.period.start, configuration.period.end);
   const neighborhoodCounts = new Map();
   const truckCounts = new Map();
   const dayCounts = new Map(DAY_NAMES.map((name) => [name, 0]));
@@ -678,13 +735,21 @@ function analyzeDemoDataset({ catalog, filters = {}, parameters = {}, seed = 202
   let lastSelectedDate = null;
   let firstSyntheticId = null;
   let lastSyntheticId = null;
+  let firstGeneratedDate = null;
+  let lastGeneratedDate = null;
 
   for (let index = 0; index < configuration.count; index += 1) {
     const syntheticId = `DEMO-${String(index + 1).padStart(7, "0")}`;
     if (index === 0) firstSyntheticId = syntheticId;
     lastSyntheticId = syntheticId;
-    const date = demoDateAt(index, configuration.count, dates, random);
-    const dayServiceIndexes = serviceIndexesByDay.get(isoDay(date));
+    const ordinal = demoDateOrdinalAt(index, configuration.count, periodStartOrdinal, periodDays, random);
+    const date = dateFromOrdinal(ordinal);
+    if (date < configuration.period.start || date > configuration.period.end) {
+      throw new Error("El generador produjo una fecha fuera del intervalo solicitado");
+    }
+    if (!firstGeneratedDate || date < firstGeneratedDate) firstGeneratedDate = date;
+    if (!lastGeneratedDate || date > lastGeneratedDate) lastGeneratedDate = date;
+    const dayServiceIndexes = serviceIndexesByDay.get(isoDayFromOrdinal(ordinal));
     const primaryIndex = dayServiceIndexes[Math.floor(random() * dayServiceIndexes.length)];
     const primary = services[primaryIndex];
     let secondaryIndex = -1;
@@ -708,7 +773,6 @@ function analyzeDemoDataset({ catalog, filters = {}, parameters = {}, seed = 202
     }
     const retired = random() < 0.08;
 
-    if (date < appliedFilters.startDate || date > appliedFilters.endDate) continue;
     if (appliedFilters.neighborhoodId && !scenario.neighborhoodIds.includes(appliedFilters.neighborhoodId)) continue;
     if (appliedFilters.truckId && !scenario.truckIds.includes(appliedFilters.truckId)) continue;
 
@@ -733,9 +797,12 @@ function analyzeDemoDataset({ catalog, filters = {}, parameters = {}, seed = 202
       delaySum += delay;
       durationIndex = DURATION_RANGES.indexOf(range) + 1;
     }
-    const year = date.slice(0, 4);
-    timelineCounts.set(year, (timelineCounts.get(year) || 0) + 1);
-    for (const service of scenario.services) affectedOccurrences.add(`${service.id}@${date}`);
+    const timeBucket = demoTimelineKey(date, configuration.period.start, configuration.period.end);
+    timelineCounts.set(timeBucket, (timelineCounts.get(timeBucket) || 0) + 1);
+    for (const service of scenario.services) {
+      const serviceIndex = serviceIndexById.get(service.id);
+      affectedOccurrences.add((ordinal * services.length) + serviceIndex);
+    }
 
     const profileKey = ((((scenario.key * 4) + reasonIndex) * 2 + stateIndex) * 6) + durationIndex;
     const profile = transactionProfiles.get(profileKey);
@@ -765,7 +832,7 @@ function analyzeDemoDataset({ catalog, filters = {}, parameters = {}, seed = 202
     reasons,
     weekdays: DAY_NAMES.map((id) => ({ id, label: id.charAt(0) + id.slice(1).toLowerCase(), count: dayCounts.get(id) || 0 })),
     shifts: [...shiftCounts].map(([id, value]) => ({ id, label: id.charAt(0) + id.slice(1).toLowerCase(), count: value })),
-    timeline: [...timelineCounts].sort(([left], [right]) => left.localeCompare(right)).map(([year, value]) => ({ id: year, label: year, count: value })),
+    timeline: [...timelineCounts].sort(([left], [right]) => left.localeCompare(right)).map(([bucket, value]) => ({ id: bucket, label: bucket, count: value })),
     durations: DURATION_RANGES.map((id) => ({ id, label: id === "MAS_DE_120" ? "> 120" : id, count: durationCounts.get(id) || 0 })),
   };
   const indicators = {
@@ -787,8 +854,9 @@ function analyzeDemoDataset({ catalog, filters = {}, parameters = {}, seed = 202
     synthetic_unique_ids: configuration.count,
     synthetic_first_id: firstSyntheticId,
     synthetic_last_id: lastSyntheticId,
-    synthetic_first_date: configuration.period.start,
-    synthetic_last_date: configuration.period.end,
+    synthetic_first_date: firstGeneratedDate,
+    synthetic_last_date: lastGeneratedDate,
+    synthetic_out_of_range_records: 0,
   };
   const analysis = {
     mode: "demo",
@@ -819,8 +887,8 @@ function analyzeDemoDataset({ catalog, filters = {}, parameters = {}, seed = 202
     unique_ids: configuration.count,
     first_id: firstSyntheticId,
     last_id: lastSyntheticId,
-    first_date: configuration.period.start,
-    last_date: configuration.period.end,
+    first_date: firstGeneratedDate,
+    last_date: lastGeneratedDate,
     period: configuration.period,
     processing: "Generación determinista en flujo, acumulación incremental y perfiles de transacción ponderados.",
   };
