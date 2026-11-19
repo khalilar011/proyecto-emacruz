@@ -7,7 +7,8 @@
 - `validate_supabase_sql.py`: detecta delimitadores o tuplas sin cerrar y comprueba migraciones, plantillas, pruebas, 26 barrios y 104 servicios consecutivos.
 - `verify_supabase_public.py`: usa solo la URL y publishable key de `web/config.js` para comprobar catálogos, lectura pública y denegación anónima de tablas/RPC de escritura.
 - `verify_supabase_frontend.js`: aplica la lógica real de `web/incidents.js` a las incidencias vigentes de Supabase y confirma qué barrios muestran el aviso.
+- `benchmark_mining.mjs`: procesa el millón sintético con el motor real e informa tiempo, memoria residente máxima, perfiles ponderados y reglas, sin escribir filas ni archivos.
 
 Los scripts usan rutas relativas a la raíz del repositorio. No requieren dependencias nuevas fuera de `openpyxl`, que ya está declarada en `requirements.txt`.
 
-La fase de minería no agrega un script Python alternativo: usa un único motor JavaScript compatible con Node/Deno en `supabase/functions/_shared/mining-engine.mjs`, probado por `tests/test_mining_engine.mjs`. Así la ejecución manual y la semanal no pueden divergir por usar implementaciones distintas. Chart.js se carga en el navegador desde una versión fijada y no modifica las dependencias Python.
+El análisis no agrega un motor Python alternativo: usa un único motor JavaScript compatible con Node/Deno en `supabase/functions/_shared/mining-engine.mjs`, probado por `tests/test_mining_engine.mjs`. Así la ejecución manual y la semanal no pueden divergir por usar implementaciones distintas. Chart.js se carga en el navegador desde una versión fijada y no modifica las dependencias Python.

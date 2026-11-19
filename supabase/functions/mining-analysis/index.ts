@@ -1,7 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2.49.8";
 import {
+  analyzeDemoDataset,
   analyzeIncidents,
-  createDemoIncidents,
 } from "../_shared/mining-engine.mjs";
 
 const ALLOWED_ORIGINS = new Set([
@@ -137,7 +137,7 @@ Deno.serve(async (request: Request) => {
   }).eq("mode", mode).eq("status", "RUNNING").lt("started_at", staleBefore);
 
   const sourceDescription = mode === "demo"
-    ? "Dataset sintético reproducible generado en memoria; no se inserta en incidents."
+    ? "Un millón de registros sintéticos reproducibles procesados en flujo y comprimidos como transacciones ponderadas; no se insertan en incidents."
     : "Versión actual de cada fila de public.incidents, incluidos registros retirados; no se multiplican ediciones del historial.";
   const { data: run, error: runError } = await adminClient.from("mining_analysis_runs").insert({
     mode,
@@ -150,7 +150,7 @@ Deno.serve(async (request: Request) => {
   }).select("id,started_at").single();
   if (runError) {
     if (runError.code === "23505") return json(request, { error: "Ya existe un análisis en curso para este modo" }, 409);
-    console.error("No se pudo crear la corrida", runError);
+    console.error("No se pudo crear la ejecución", runError);
     return json(request, { error: "No se pudo iniciar el análisis" }, 500);
   }
 
@@ -167,20 +167,15 @@ Deno.serve(async (request: Request) => {
     if (neighborhoodResult.data?.length !== 26 || serviceResult.data?.length !== 104) throw new Error("El catálogo activo no contiene 26 barrios y 104 servicios");
 
     const catalog = { neighborhoods: neighborhoodResult.data || [], services: serviceResult.data || [] };
-    let incidents = incidentResult.data || [];
-    if (mode === "demo") {
-      const demo = createDemoIncidents(catalog, { seed: 20261111, count: 180 });
-      incidents = demo.incidents;
-      if (!filters.startDate) filters.startDate = demo.period.start;
-      if (!filters.endDate) filters.endDate = demo.period.end;
-    }
-    const analysis = analyzeIncidents({
-      incidents,
-      catalog,
-      mode,
-      filters,
-      parameters,
-    });
+    const analysis = mode === "demo"
+      ? analyzeDemoDataset({ catalog, filters, parameters, seed: 20261111, count: 1_000_000 })
+      : analyzeIncidents({
+        incidents: incidentResult.data || [],
+        catalog,
+        mode,
+        filters,
+        parameters,
+      });
     const completedAt = new Date().toISOString();
     const { data: saved, error: saveError } = await adminClient.from("mining_analysis_runs").update({
       period_start: analysis.period.start,
@@ -205,7 +200,7 @@ Deno.serve(async (request: Request) => {
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Error no identificado";
-    console.error("Falló la corrida de minería", { runId: run.id, message });
+    console.error("Falló la ejecución del análisis", { runId: run.id, message });
     await adminClient.from("mining_analysis_runs").update({
       status: "FAILED",
       completed_at: new Date().toISOString(),

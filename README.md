@@ -12,8 +12,8 @@ Prototipo universitario para consultar programación **simulada** de recolecció
 - Visor sencillo de los tres mapas suministrados: barrios, unidades vecinales y plano municipal, con ampliación entre 75 % y 300 %.
 - Sin Leaflet, polígonos, filtros cartográficos, GPS, calles recorridas ni rutas oficiales.
 - Panel `/admin/` con Supabase Auth, PostgreSQL, RLS, historial y operaciones validadas.
-- Panel privado `/admin/mineria/` con descriptivos, siete gráficas, tasas sobre servicios programados y reglas Apriori.
-- Dos modos separados: 180 incidencias sintéticas reproducibles y el historial registrado del prototipo.
+- Panel privado `/admin/mineria/`, denominado **Análisis exploratorio**, con descriptivos, siete gráficas y reglas Apriori.
+- Dos modos separados: 1.000.000 de registros sintéticos reproducibles y el historial registrado del prototipo.
 - Motor único en Supabase Edge Functions para actualización manual y semanal, con resultados persistidos y RLS.
 - Un único respaldo JSON si Supabase no responde durante la carga inicial.
 - Tres mapas suministrados, conservados como referencias secundarias ampliables.
@@ -112,7 +112,9 @@ La web pública recibe el cambio por Realtime o en la consulta periódica. El ho
 
 ### Analizar incidencias desde el navegador
 
-Una cuenta incluida en `admin_users` puede abrir **Minería de datos** sin volver a iniciar sesión. El modo demostración genera 180 observaciones sintéticas con semilla fija sin insertarlas en `incidents`; el modo historial usa una fila actual por incidencia y conserva retiradas. El botón ejecuta Apriori en el servidor, guarda la corrida y sólo confirma el éxito después de persistirla.
+Una cuenta incluida en `admin_users` puede abrir **Análisis exploratorio** sin volver a iniciar sesión. El modo demostración genera y procesa exactamente 1.000.000 de registros sintéticos con semilla fija, sin insertarlos en `incidents` ni enviarlos al navegador; el modo historial usa una fila actual por incidencia y conserva las retiradas. El motor acumula estadísticas en flujo, comprime perfiles equivalentes con conteos ponderados y ejecuta Apriori con resultados idénticos a la expansión individual. El botón solo confirma el éxito después de guardar la ejecución.
+
+La demostración cubre del 05/01/2026 al 05/07/2026 y usa la semilla `20261111`. Es una prueba académica de procesamiento, no un millón de incidencias reales. Por eso sus conteos no se presentan como tasas de puntualidad o cumplimiento respecto a los 104 servicios semanales. El panel muestra por separado el periodo cubierto y la fecha/hora de ejecución en `America/La_Paz`.
 
 El cron de GitHub Actions invoca el mismo motor los lunes a las 07:00 UTC (03:00 en Bolivia). Su despliegue y el secreto compartido se configuran siguiendo [docs/mineria-datos.md](docs/mineria-datos.md). Las asociaciones son descriptivas, no causales, y las tasas usan servicios programados, no servicios efectivamente realizados.
 
@@ -172,7 +174,9 @@ node tests/test_incidents.js
 node tests/test_web_integration.js
 node tests/test_mining_engine.mjs
 node tests/test_mining_integration.mjs
+node tests/test_mining_frontend.js
 node tests/test_visual_regression.js
+node scripts/benchmark_mining.mjs
 node --check web/app.js
 node --check web/theme.js
 node --check web/map-viewer.js

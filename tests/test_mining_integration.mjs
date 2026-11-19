@@ -9,6 +9,7 @@ const admin = read("web/admin/index.html");
 const publicPage = read("web/index.html");
 const miningPage = read("web/admin/mineria/index.html");
 const miningFrontend = read("web/admin/mineria/mining.js");
+const miningView = read("web/admin/mineria/mining-view.js");
 const edgeFunction = read("supabase/functions/mining-analysis/index.ts");
 const migration = read("supabase/migrations/0003_mining_analysis.sql");
 const workflow = read(".github/workflows/mining-weekly.yml");
@@ -23,9 +24,11 @@ for (const match of miningPage.matchAll(/(?:src|href)="([^"]+)"/g)) {
   assert.ok(fs.existsSync(resolved), `Recurso local inexistente: ${resource}`);
 }
 
-assert.match(admin, /href="mineria\/"[^>]*>Minería de datos/);
-assert.doesNotMatch(publicPage, /admin\/mineria|Minería de datos/);
+assert.match(admin, /href="mineria\/"[^>]*>Análisis exploratorio/);
+assert.doesNotMatch(publicPage, /admin\/mineria|Análisis exploratorio/);
 assert.match(miningPage, /Gestión de alertas/);
+assert.match(miningPage, /<title>Análisis exploratorio · Alerta Ruta<\/title>/);
+assert.match(miningPage, /<h1>Análisis exploratorio<\/h1>/);
 assert.match(miningPage, /DATOS SINTÉTICOS — DEMOSTRACIÓN ACADÉMICA/);
 assert.match(miningPage, /Historial registrado del prototipo/);
 assert.match(miningPage, /Actualizar análisis/);
@@ -33,6 +36,12 @@ assert.equal((miningPage.match(/<canvas /g) || []).length, 7);
 assert.match(miningPage, /Soporte mínimo/);
 assert.match(miningPage, /Confianza mínima/);
 assert.match(miningPage, /Lift mínimo/);
+assert.match(miningPage, /Periodo analizado/);
+assert.match(miningPage, /Fecha y hora de ejecución/);
+assert.match(miningPage, /America\/La_Paz/);
+for (const id of ["analysis-period-start", "analysis-period-end", "analysis-execution-at", "analysis-execution-type"]) {
+  assert.match(miningPage, new RegExp(`id="${id}"`));
+}
 
 assert.match(miningFrontend, /adminCore\.membership/);
 assert.match(miningFrontend, /from\("mining_analysis_runs"\)/);
@@ -41,12 +50,16 @@ assert.doesNotMatch(miningFrontend, /sb_secret_|service_role/);
 assert.doesNotMatch(miningPage, /sb_secret_|service_role/);
 
 assert.match(edgeFunction, /analyzeIncidents/);
-assert.match(edgeFunction, /createDemoIncidents/);
+assert.match(edgeFunction, /analyzeDemoDataset/);
+assert.match(edgeFunction, /count: 1_000_000/);
 assert.match(edgeFunction, /SUPABASE_SECRET_KEYS/);
 assert.match(edgeFunction, /MINING_SCHEDULE_SECRET/);
 assert.match(edgeFunction, /admin_users/);
 assert.match(edgeFunction, /status: "COMPLETED"/);
 assert.doesNotMatch(edgeFunction, /sb_secret_[A-Za-z0-9_-]+/);
+assert.match(miningView, /timeZone: "America\/La_Paz"/);
+assert.match(miningView, /Sin registros para el periodo/);
+assert.match(miningFrontend, /No se calculan tasas operativas/);
 
 assert.match(migration, /enable row level security/);
 assert.match(migration, /revoke all on public\.mining_analysis_runs from public, anon, authenticated/);

@@ -155,10 +155,26 @@ function explainRule(rule, neighborhoods) {
   };
 }
 
+function normalizeWeightedTransactions(transactions) {
+  const profiles = new Map();
+  for (const transaction of transactions || []) {
+    const rawItems = Array.isArray(transaction) ? transaction : transaction?.items;
+    const weight = Array.isArray(transaction) ? 1 : Number(transaction?.weight);
+    if (!Array.isArray(rawItems) || !Number.isSafeInteger(weight) || weight <= 0) continue;
+    const items = unique(rawItems).sort();
+    if (!items.length) continue;
+    const key = keyOf(items);
+    const current = profiles.get(key);
+    if (current) current.weight += weight;
+    else profiles.set(key, { items: new Set(items), weight });
+  }
+  return [...profiles.values()];
+}
+
 function apriori(transactions, rawParameters = {}, neighborhoodNames = new Map()) {
   const parameters = normalizeAprioriParameters(rawParameters);
-  const normalized = transactions.map((items) => new Set(unique(items))).filter((items) => items.size > 0);
-  const total = normalized.length;
+  const normalized = normalizeWeightedTransactions(transactions);
+  const total = normalized.reduce((sum, transaction) => sum + transaction.weight, 0);
   if (total < parameters.minimumTransactions) {
     return { parameters, frequentItemsets: [], rules: [], totalRuleCount: 0, insufficientData: true };
   }
@@ -168,7 +184,7 @@ function apriori(transactions, rawParameters = {}, neighborhoodNames = new Map()
   const frequentBySize = new Map();
   const singleCounts = new Map();
   for (const transaction of normalized) {
-    for (const item of transaction) singleCounts.set(item, (singleCounts.get(item) || 0) + 1);
+    for (const item of transaction.items) singleCounts.set(item, (singleCounts.get(item) || 0) + transaction.weight);
   }
   let previous = [...singleCounts.entries()]
     .filter(([, count]) => count >= minimumCount)
@@ -190,7 +206,9 @@ function apriori(transactions, rawParameters = {}, neighborhoodNames = new Map()
     }
     const frequent = [];
     for (const candidate of candidates.values()) {
-      const count = normalized.reduce((sum, transaction) => sum + Number(isSubset(candidate, transaction)), 0);
+      const count = normalized.reduce((sum, transaction) => (
+        sum + (isSubset(candidate, transaction.items) ? transaction.weight : 0)
+      ), 0);
       if (count >= minimumCount) {
         frequent.push({ items: candidate, count });
         supportCounts.set(keyOf(candidate), count);
@@ -272,25 +290,6 @@ function deduplicateIncidents(incidents) {
   return [...byId.values()];
 }
 
-function filterIncidents(incidents, filters = {}) {
-  return deduplicateIncidents(incidents).filter((incident) => {
-    const date = localDate(incident.starts_at);
-    if (filters.startDate && (!date || date < filters.startDate)) return false;
-    if (filters.endDate && (!date || date > filters.endDate)) return false;
-    if (filters.neighborhoodId && !(incident.affected_neighborhood_ids || []).includes(filters.neighborhoodId)) return false;
-    if (filters.truckId && !(incident.affected_truck_ids || []).includes(filters.truckId)) return false;
-    return true;
-  });
-}
-
-function dateBounds(incidents, filters = {}) {
-  const dates = incidents.map((incident) => localDate(incident.starts_at)).filter(Boolean).sort();
-  return {
-    start: filters.startDate || dates[0] || null,
-    end: filters.endDate || dates[dates.length - 1] || null,
-  };
-}
-
 function expectedServiceOccurrences(services, bounds, filters = {}) {
   const countsByNeighborhood = new Map();
   const countsByTruck = new Map();
@@ -309,31 +308,6 @@ function expectedServiceOccurrences(services, bounds, filters = {}) {
   return { total, countsByNeighborhood, countsByTruck };
 }
 
-function affectedOccurrenceKeys(incidents, servicesById, bounds) {
-  const keys = new Set();
-  if (!bounds.start || !bounds.end) return keys;
-  for (const incident of incidents) {
-    const incidentStart = localDate(incident.starts_at) || bounds.start;
-    const incidentEnd = localDate(incident.expires_at) || incidentStart;
-    const start = incidentStart < bounds.start ? bounds.start : incidentStart;
-    const end = incidentEnd > bounds.end ? bounds.end : incidentEnd;
-    for (const serviceId of unique(incident.affected_service_ids || [])) {
-      const service = servicesById.get(serviceId);
-      if (!service) continue;
-      for (const date of eachDate(start, end)) {
-        if (service.day === isoDay(date)) keys.add(`${service.id}@${date}`);
-      }
-    }
-  }
-  return keys;
-}
-
-function countBy(values) {
-  const counts = new Map();
-  for (const value of values) counts.set(value, (counts.get(value) || 0) + 1);
-  return counts;
-}
-
 function mondayOf(dateOnly) {
   return addDays(dateOnly, 1 - isoDay(dateOnly));
 }
@@ -344,13 +318,13 @@ function sortedEntries(counts, label = (value) => value) {
     .sort((left, right) => right.count - left.count || left.label.localeCompare(right.label, "es"));
 }
 
-function ranking(counts, expectedCounts, label) {
+function ranking(counts, expectedCounts, label, includeNormalizedRate = true) {
   return sortedEntries(counts, label).map((entry) => {
     const programmed = expectedCounts.get(entry.id) || 0;
     return {
       ...entry,
       programmed_services: programmed,
-      incidents_per_100_programmed: programmed ? (entry.count / programmed) * 100 : null,
+      incidents_per_100_programmed: includeNormalizedRate && programmed ? (entry.count / programmed) * 100 : null,
     };
   });
 }
@@ -360,59 +334,105 @@ function buildFindings(mode, indicators, charts, rules) {
   const modeText = mode === "demo"
     ? "Este hallazgo procede de datos sintéticos y sirve únicamente para demostrar el método."
     : "Este hallazgo describe el historial registrado del prototipo; no acredita una operación real de EMACRUZ.";
-  if (charts.trucks[0]) findings.push(`${charts.trucks[0].label} concentra ${charts.trucks[0].count} incidencias registradas. Conviene revisar sus registros de mantenimiento y programación. ${modeText}`);
-  if (charts.neighborhoods[0]) findings.push(`${charts.neighborhoods[0].label} aparece en ${charts.neighborhoods[0].count} incidencias. Se recomienda investigar las condiciones de sus servicios programados antes de atribuir una causa. ${modeText}`);
+  const countLabel = mode === "demo" ? "observaciones sintéticas" : "incidencias registradas";
+  if (charts.trucks[0]) findings.push(`${charts.trucks[0].label} concentra ${charts.trucks[0].count} ${countLabel}. Conviene revisar el patrón antes de formular una hipótesis operativa. ${modeText}`);
+  if (charts.neighborhoods[0]) findings.push(`${charts.neighborhoods[0].label} aparece en ${charts.neighborhoods[0].count} ${countLabel}. Se recomienda investigar las condiciones de sus servicios programados antes de atribuir una causa. ${modeText}`);
   if (rules[0]) findings.push(`La asociación con mayor lift relaciona ${rules[0].antecedent_label} con ${rules[0].consequent_label}. Puede orientar una revisión, pero no demuestra causalidad. ${modeText}`);
   if (!rules.length) findings.push(`Con ${indicators.total_incidents} incidencias no se obtuvieron reglas que superen los umbrales configurados. Se mantienen los descriptivos sin forzar asociaciones.`);
   return findings;
 }
 
-function analyzeIncidents({ incidents, catalog, mode = "history", filters = {}, parameters = {} }) {
+function incidentMatchesFilters(incident, filters) {
+  const date = incident.analysis_date || localDate(incident.starts_at);
+  if (filters.startDate && (!date || date < filters.startDate)) return false;
+  if (filters.endDate && (!date || date > filters.endDate)) return false;
+  if (filters.neighborhoodId && !(incident.affected_neighborhood_ids || []).includes(filters.neighborhoodId)) return false;
+  if (filters.truckId && !(incident.affected_truck_ids || []).includes(filters.truckId)) return false;
+  return true;
+}
+
+function analyzeIncidentIterable({ incidents, catalog, mode = "history", filters = {}, parameters = {} }) {
   const services = (catalog.servicios || catalog.services || []).map(normalizeService);
   const neighborhoods = (catalog.barrios || catalog.neighborhoods || []).map(normalizeNeighborhood);
   const servicesById = new Map(services.map((service) => [service.id, service]));
   const neighborhoodNames = new Map(neighborhoods.map((neighborhood) => [neighborhood.id, neighborhood.name]));
-  const selected = filterIncidents(incidents, filters);
-  const bounds = dateBounds(selected, filters);
-  const expected = expectedServiceOccurrences(services, bounds, filters);
-  const expectedForRankings = expectedServiceOccurrences(services, bounds, {});
-  const affectedOccurrences = affectedOccurrenceKeys(selected, servicesById, bounds);
-  const transactions = selected.map((incident) => transactionForIncident(incident, servicesById));
-  const mined = apriori(transactions, parameters, neighborhoodNames);
-
   const neighborhoodCounts = new Map();
   const truckCounts = new Map();
   const dayCounts = new Map(DAY_NAMES.map((name) => [name, 0]));
   const shiftCounts = new Map([["MANANA", 0], ["MEDIODIA", 0], ["TARDE", 0]]);
-  for (const incident of selected) {
+  const reasonCounts = new Map();
+  const durationCounts = new Map(DURATION_RANGES.map((range) => [range, 0]));
+  const timelineCounts = new Map();
+  const transactionProfiles = new Map();
+  const affectedOccurrences = new Set();
+  const weekByDate = new Map();
+  let totalIncidents = 0;
+  let retiredIncidents = 0;
+  let delayCount = 0;
+  let delaySum = 0;
+  let firstDate = null;
+  let lastDate = null;
+
+  for (const incident of incidents || []) {
+    if (!incidentMatchesFilters(incident, filters)) continue;
+    totalIncidents += 1;
+    if (incident.retired_at) retiredIncidents += 1;
+    const incidentDate = incident.analysis_date || localDate(incident.starts_at);
+    if (incidentDate && (!firstDate || incidentDate < firstDate)) firstDate = incidentDate;
+    if (incidentDate && (!lastDate || incidentDate > lastDate)) lastDate = incidentDate;
     const incidentServices = unique(incident.affected_service_ids || []).map((id) => servicesById.get(id)).filter(Boolean);
     for (const value of unique([...(incident.affected_neighborhood_ids || []), ...incidentServices.map((service) => service.neighborhoodId)])) neighborhoodCounts.set(value, (neighborhoodCounts.get(value) || 0) + 1);
     for (const value of unique([...(incident.affected_truck_ids || []), ...incidentServices.map((service) => service.truckId)])) truckCounts.set(value, (truckCounts.get(value) || 0) + 1);
     for (const value of unique(incidentServices.map((service) => DAY_NAMES[service.day - 1]))) dayCounts.set(value, (dayCounts.get(value) || 0) + 1);
     for (const value of unique(incidentServices.map((service) => shiftFor(service.start)))) shiftCounts.set(value, (shiftCounts.get(value) || 0) + 1);
-  }
-  const reasonCounts = countBy(selected.map((incident) => incident.reason_code));
-  const durationCounts = new Map(DURATION_RANGES.map((range) => [range, 0]));
-  const delays = [];
-  for (const incident of selected) {
+    reasonCounts.set(incident.reason_code, (reasonCounts.get(incident.reason_code) || 0) + 1);
     const range = durationRange(incident.estimated_delay_minutes);
     if (range) {
       durationCounts.set(range, durationCounts.get(range) + 1);
-      delays.push(Number(incident.estimated_delay_minutes));
+      delayCount += 1;
+      delaySum += Number(incident.estimated_delay_minutes);
     }
-  }
-  const timelineCounts = new Map();
-  for (const incident of selected) {
-    const date = localDate(incident.starts_at);
-    if (date) {
-      const week = mondayOf(date);
+    if (incidentDate) {
+      let week = weekByDate.get(incidentDate);
+      if (!week) {
+        week = mondayOf(incidentDate);
+        weekByDate.set(incidentDate, week);
+      }
       timelineCounts.set(week, (timelineCounts.get(week) || 0) + 1);
     }
+    const transaction = transactionForIncident(incident, servicesById);
+    const transactionKey = keyOf(transaction);
+    const profile = transactionProfiles.get(transactionKey);
+    if (profile) profile.weight += 1;
+    else transactionProfiles.set(transactionKey, { items: transaction, weight: 1 });
+
+    const incidentStart = incidentDate;
+    const incidentEnd = incident.analysis_end_date || localDate(incident.expires_at) || incidentStart;
+    if (incidentStart && incidentEnd) {
+      for (const service of incidentServices) {
+        for (const date of eachDate(incidentStart, incidentEnd)) {
+          if (service.day === isoDay(date)) affectedOccurrences.add(`${service.id}@${date}`);
+        }
+      }
+    }
   }
+
+  const bounds = totalIncidents ? {
+    start: filters.startDate || firstDate,
+    end: filters.endDate || lastDate,
+  } : { start: null, end: null };
+  const expected = expectedServiceOccurrences(services, bounds, filters);
+  const expectedForRankings = expectedServiceOccurrences(services, bounds, {});
+  const affectedOccurrenceCount = [...affectedOccurrences].filter((key) => {
+    const date = key.slice(key.lastIndexOf("@") + 1);
+    return bounds.start && bounds.end && date >= bounds.start && date <= bounds.end;
+  }).length;
+  const mined = apriori([...transactionProfiles.values()], parameters, neighborhoodNames);
   const reasons = sortedEntries(reasonCounts, (code) => REASON_LABELS[code] || code);
+  const includeNormalizedRate = mode !== "demo";
   const charts = {
-    neighborhoods: ranking(neighborhoodCounts, expectedForRankings.countsByNeighborhood, (id) => neighborhoodNames.get(id) || id),
-    trucks: ranking(truckCounts, expectedForRankings.countsByTruck, (id) => id),
+    neighborhoods: ranking(neighborhoodCounts, expectedForRankings.countsByNeighborhood, (id) => neighborhoodNames.get(id) || id, includeNormalizedRate),
+    trucks: ranking(truckCounts, expectedForRankings.countsByTruck, (id) => id, includeNormalizedRate),
     reasons,
     weekdays: DAY_NAMES.map((id) => ({ id, label: id.charAt(0) + id.slice(1).toLowerCase(), count: dayCounts.get(id) || 0 })),
     shifts: [...shiftCounts].map(([id, count]) => ({ id, label: id.charAt(0) + id.slice(1).toLowerCase(), count })),
@@ -420,19 +440,25 @@ function analyzeIncidents({ incidents, catalog, mode = "history", filters = {}, 
     durations: DURATION_RANGES.map((id) => ({ id, label: id === "MAS_DE_120" ? "> 120" : id, count: durationCounts.get(id) || 0 })),
   };
   const indicators = {
-    total_incidents: selected.length,
+    total_incidents: totalIncidents,
     affected_neighborhoods: neighborhoodCounts.size,
     affected_trucks: truckCounts.size,
     most_frequent_reason: reasons[0]?.label || null,
-    average_estimated_delay_minutes: delays.length ? delays.reduce((sum, value) => sum + value, 0) / delays.length : null,
+    average_estimated_delay_minutes: delayCount ? delaySum / delayCount : null,
     association_rules: mined.totalRuleCount,
     programmed_services_in_period: expected.total,
-    affected_programmed_service_occurrences: affectedOccurrences.size,
-    retired_incidents: selected.filter((incident) => Boolean(incident.retired_at)).length,
+    affected_programmed_service_occurrences: affectedOccurrenceCount,
+    retired_incidents: retiredIncidents,
+    compressed_transaction_profiles: new Set(
+      [...transactionProfiles.values()].map((profile) => keyOf(profile.items)),
+    ).size,
+    normalized_rates_applicable: includeNormalizedRate,
   };
   return {
     mode,
-    unit_of_analysis: "Una transacción por incidencia única (ID), usando su versión actual; los barrios, camiones, días y turnos afectados son ítems categóricos de esa única transacción.",
+    unit_of_analysis: mode === "demo"
+      ? "Una transacción por registro sintético único; los perfiles idénticos se comprimen con un peso entero y Apriori conserva el conteo equivalente a su expansión individual."
+      : "Una transacción por incidencia única (ID), usando su versión actual; los barrios, camiones, días y turnos afectados son ítems categóricos de esa única transacción.",
     period: bounds,
     filters: {
       startDate: filters.startDate || null,
@@ -440,8 +466,8 @@ function analyzeIncidents({ incidents, catalog, mode = "history", filters = {}, 
       neighborhoodId: filters.neighborhoodId || null,
       truckId: filters.truckId || null,
     },
-    record_count: selected.length,
-    transaction_count: transactions.length,
+    record_count: totalIncidents,
+    transaction_count: totalIncidents,
     indicators,
     charts,
     rules: mined.rules,
@@ -451,6 +477,16 @@ function analyzeIncidents({ incidents, catalog, mode = "history", filters = {}, 
     parameters: mined.parameters,
     findings: buildFindings(mode, indicators, charts, mined.rules),
   };
+}
+
+function analyzeIncidents({ incidents, catalog, mode = "history", filters = {}, parameters = {} }) {
+  return analyzeIncidentIterable({
+    incidents: deduplicateIncidents(incidents),
+    catalog,
+    mode,
+    filters,
+    parameters,
+  });
 }
 
 function seededRandom(seed) {
@@ -467,12 +503,28 @@ function isoAt(date, time) {
   return `${date}T${time}:00-04:00`;
 }
 
-function createDemoIncidents(catalog, options = {}) {
-  const count = Math.round(clampNumber(options.count, 180, 150, 200));
-  const seed = Number(options.seed ?? 20261111);
+function demoOptions(options = {}, defaultCount = 1_000_000) {
+  return {
+    count: Math.round(clampNumber(options.count, defaultCount, 1, 1_000_000)),
+    seed: Number(options.seed ?? 20261111),
+    period: { start: "2026-01-05", end: "2026-07-05" },
+  };
+}
+
+function* demoIncidentSequence(catalog, options = {}) {
+  const configuration = demoOptions(options);
+  const { count, seed } = configuration;
   const random = seededRandom(seed);
   const services = (catalog.servicios || catalog.services || []).map(normalizeService);
-  const incidents = [];
+  if (services.length !== 104) throw new Error("El conjunto sintético requiere exactamente 104 servicios activos");
+  const compatibleByService = new Map(services.map((service) => [
+    service.id,
+    services.filter((candidate) => (
+      candidate.id !== service.id
+      && candidate.truckId === service.truckId
+      && candidate.day === service.day
+    )),
+  ]));
   const firstMonday = "2026-01-05";
   for (let index = 0; index < count; index += 1) {
     const primary = services[Math.floor(random() * services.length)];
@@ -480,7 +532,7 @@ function createDemoIncidents(catalog, options = {}) {
     const date = addDays(firstMonday, (week * 7) + primary.day - 1);
     const affected = [primary];
     if (random() < 0.18) {
-      const compatible = services.filter((service) => service.id !== primary.id && service.truckId === primary.truckId && service.day === primary.day);
+      const compatible = compatibleByService.get(primary.id);
       if (compatible.length) affected.push(compatible[Math.floor(random() * compatible.length)]);
     }
     const neighborhoods = unique(affected.map((service) => service.neighborhoodId));
@@ -500,14 +552,16 @@ function createDemoIncidents(catalog, options = {}) {
     }
     const earliest = affected.map((service) => service.start).sort()[0];
     const latest = affected.map((service) => service.end).sort().at(-1);
-    incidents.push({
-      id: `DEMO-${String(index + 1).padStart(3, "0")}`,
+    yield {
+      id: `DEMO-${String(index + 1).padStart(7, "0")}`,
       state,
       reason_code: reason,
       reason_detail: REASON_LABELS[reason],
       estimated_delay_minutes: delay,
+      analysis_date: date,
+      analysis_end_date: date,
       starts_at: isoAt(date, earliest),
-      expires_at: new Date(new Date(isoAt(date, latest)).getTime() + (60 * 1000)).toISOString(),
+      expires_at: isoAt(date, latest),
       affected_service_ids: affected.map((service) => service.id),
       affected_neighborhood_ids: neighborhoods,
       affected_truck_ids: trucks,
@@ -516,17 +570,253 @@ function createDemoIncidents(catalog, options = {}) {
       is_simulation: true,
       retired_at: random() < 0.08 ? isoAt(date, latest) : null,
       updated_at: isoAt(date, earliest),
-    });
+    };
   }
-  return { incidents, seed, count, period: { start: "2026-01-05", end: "2026-07-05" } };
+}
+
+function createDemoIncidents(catalog, options = {}) {
+  const configuration = demoOptions(options, 180);
+  return {
+    incidents: [...demoIncidentSequence(catalog, configuration)],
+    seed: configuration.seed,
+    count: configuration.count,
+    period: configuration.period,
+  };
+}
+
+function analyzeDemoDataset({ catalog, filters = {}, parameters = {}, seed = 20261111, count = 1_000_000 }) {
+  const configuration = demoOptions({ seed, count });
+  const appliedFilters = {
+    ...filters,
+    startDate: filters.startDate || configuration.period.start,
+    endDate: filters.endDate || configuration.period.end,
+  };
+  const started = typeof performance !== "undefined" ? performance.now() : Date.now();
+  const services = (catalog.servicios || catalog.services || []).map(normalizeService);
+  const neighborhoods = (catalog.barrios || catalog.neighborhoods || []).map(normalizeNeighborhood);
+  const trucks = unique(services.map((service) => service.truckId));
+  if (services.length !== 104 || neighborhoods.length !== 26 || trucks.length !== 12) {
+    throw new Error("El conjunto sintético requiere 26 barrios, 104 servicios y 12 camiones");
+  }
+
+  const neighborhoodNames = new Map(neighborhoods.map((neighborhood) => [neighborhood.id, neighborhood.name]));
+  const compatibleIndexes = services.map((service, primaryIndex) => services
+    .map((candidate, candidateIndex) => ({ candidate, candidateIndex }))
+    .filter(({ candidate, candidateIndex }) => (
+      candidateIndex !== primaryIndex
+      && candidate.truckId === service.truckId
+      && candidate.day === service.day
+    ))
+    .map(({ candidateIndex }) => candidateIndex));
+  const scenarioCache = new Map();
+  const scenarioFor = (primaryIndex, secondaryIndex) => {
+    const scenarioKey = (primaryIndex * 106) + secondaryIndex + 1;
+    let scenario = scenarioCache.get(scenarioKey);
+    if (scenario) return scenario;
+    const affectedServices = secondaryIndex >= 0
+      ? [services[primaryIndex], services[secondaryIndex]]
+      : [services[primaryIndex]];
+    const neighborhoodIds = unique(affectedServices.map((service) => service.neighborhoodId));
+    const truckIds = unique(affectedServices.map((service) => service.truckId));
+    const days = unique(affectedServices.map((service) => service.day));
+    const shifts = unique(affectedServices.map((service) => shiftFor(service.start)));
+    scenario = {
+      key: scenarioKey,
+      services: affectedServices,
+      neighborhoodIds,
+      truckIds,
+      days,
+      shifts,
+      hasTruckC01: truckIds.includes("SIM-C01"),
+      hasRainNeighborhood: neighborhoodIds.includes("D2-B09") || neighborhoodIds.includes("D2-B18"),
+      hasAfternoon: shifts.includes("TARDE"),
+      baseItems: [
+        ...truckIds.map((value) => `CAMION=${value}`),
+        ...neighborhoodIds.map((value) => `BARRIO=${value}`),
+        ...days.map((value) => `DIA=${DAY_NAMES[value - 1]}`),
+        ...shifts.map((value) => `TURNO=${value}`),
+      ],
+    };
+    scenarioCache.set(scenarioKey, scenario);
+    return scenario;
+  };
+
+  const reasonCodes = ["LLUVIA", "FALLA_MECANICA", "PROBLEMA_TECNICO", "OTRO"];
+  const random = seededRandom(configuration.seed);
+  const firstMonday = configuration.period.start;
+  const dates = Array.from({ length: 26 }, (_, week) => (
+    Array.from({ length: 7 }, (_, day) => addDays(firstMonday, (week * 7) + day))
+  ));
+  const neighborhoodCounts = new Map();
+  const truckCounts = new Map();
+  const dayCounts = new Map(DAY_NAMES.map((name) => [name, 0]));
+  const shiftCounts = new Map([["MANANA", 0], ["MEDIODIA", 0], ["TARDE", 0]]);
+  const reasonCounts = new Map();
+  const durationCounts = new Map(DURATION_RANGES.map((range) => [range, 0]));
+  const timelineCounts = new Map();
+  const transactionProfiles = new Map();
+  const affectedOccurrences = new Set();
+  let totalIncidents = 0;
+  let retiredIncidents = 0;
+  let delayCount = 0;
+  let delaySum = 0;
+  let firstSelectedDate = null;
+  let lastSelectedDate = null;
+  let firstSyntheticId = null;
+  let lastSyntheticId = null;
+
+  for (let index = 0; index < configuration.count; index += 1) {
+    const syntheticId = `DEMO-${String(index + 1).padStart(7, "0")}`;
+    if (index === 0) firstSyntheticId = syntheticId;
+    lastSyntheticId = syntheticId;
+    const primaryIndex = Math.floor(random() * services.length);
+    const primary = services[primaryIndex];
+    const week = Math.floor(random() * 26);
+    let secondaryIndex = -1;
+    if (random() < 0.18) {
+      const compatible = compatibleIndexes[primaryIndex];
+      if (compatible.length) secondaryIndex = compatible[Math.floor(random() * compatible.length)];
+    }
+    const scenario = scenarioFor(primaryIndex, secondaryIndex);
+    const date = dates[week][primary.day - 1];
+
+    let reasonIndex;
+    if (scenario.hasTruckC01 && random() < 0.78) reasonIndex = 1;
+    else if (scenario.hasRainNeighborhood && random() < 0.72) reasonIndex = 0;
+    else if (scenario.hasAfternoon && random() < 0.58) reasonIndex = 2;
+    else reasonIndex = Math.floor(random() * reasonCodes.length);
+    const stateIndex = random() < 0.1 ? 1 : 0;
+    let delay = null;
+    if (stateIndex === 0) {
+      if (reasonIndex === 1 && scenario.hasTruckC01) delay = 45 + Math.floor(random() * 46);
+      else if (reasonIndex === 0 && scenario.hasRainNeighborhood) delay = 35 + Math.floor(random() * 66);
+      else delay = 10 + Math.floor(random() * 111);
+    }
+    const retired = random() < 0.08;
+
+    if (date < appliedFilters.startDate || date > appliedFilters.endDate) continue;
+    if (appliedFilters.neighborhoodId && !scenario.neighborhoodIds.includes(appliedFilters.neighborhoodId)) continue;
+    if (appliedFilters.truckId && !scenario.truckIds.includes(appliedFilters.truckId)) continue;
+
+    totalIncidents += 1;
+    if (retired) retiredIncidents += 1;
+    if (!firstSelectedDate || date < firstSelectedDate) firstSelectedDate = date;
+    if (!lastSelectedDate || date > lastSelectedDate) lastSelectedDate = date;
+    for (const value of scenario.neighborhoodIds) neighborhoodCounts.set(value, (neighborhoodCounts.get(value) || 0) + 1);
+    for (const value of scenario.truckIds) truckCounts.set(value, (truckCounts.get(value) || 0) + 1);
+    for (const value of scenario.days) {
+      const dayName = DAY_NAMES[value - 1];
+      dayCounts.set(dayName, (dayCounts.get(dayName) || 0) + 1);
+    }
+    for (const value of scenario.shifts) shiftCounts.set(value, (shiftCounts.get(value) || 0) + 1);
+    const reasonCode = reasonCodes[reasonIndex];
+    reasonCounts.set(reasonCode, (reasonCounts.get(reasonCode) || 0) + 1);
+    const range = durationRange(delay);
+    let durationIndex = 0;
+    if (range) {
+      durationCounts.set(range, durationCounts.get(range) + 1);
+      delayCount += 1;
+      delaySum += delay;
+      durationIndex = DURATION_RANGES.indexOf(range) + 1;
+    }
+    const weekDate = dates[week][0];
+    timelineCounts.set(weekDate, (timelineCounts.get(weekDate) || 0) + 1);
+    for (const service of scenario.services) affectedOccurrences.add(`${service.id}@${date}`);
+
+    const profileKey = ((((scenario.key * 4) + reasonIndex) * 2 + stateIndex) * 6) + durationIndex;
+    const profile = transactionProfiles.get(profileKey);
+    if (profile) profile.weight += 1;
+    else {
+      const items = [
+        ...scenario.baseItems,
+        `MOTIVO=${reasonCode}`,
+        `TIPO=${stateIndex ? "SERVICIO_SUSPENDIDO" : "DEMORA"}`,
+      ];
+      if (range) items.push(`DURACION=${range}`);
+      transactionProfiles.set(profileKey, { items: items.sort(), weight: 1 });
+    }
+  }
+
+  const bounds = totalIncidents ? {
+    start: appliedFilters.startDate || firstSelectedDate,
+    end: appliedFilters.endDate || lastSelectedDate,
+  } : { start: null, end: null };
+  const expected = expectedServiceOccurrences(services, bounds, appliedFilters);
+  const expectedForRankings = expectedServiceOccurrences(services, bounds, {});
+  const mined = apriori([...transactionProfiles.values()], parameters, neighborhoodNames);
+  const reasons = sortedEntries(reasonCounts, (code) => REASON_LABELS[code] || code);
+  const charts = {
+    neighborhoods: ranking(neighborhoodCounts, expectedForRankings.countsByNeighborhood, (id) => neighborhoodNames.get(id) || id, false),
+    trucks: ranking(truckCounts, expectedForRankings.countsByTruck, (id) => id, false),
+    reasons,
+    weekdays: DAY_NAMES.map((id) => ({ id, label: id.charAt(0) + id.slice(1).toLowerCase(), count: dayCounts.get(id) || 0 })),
+    shifts: [...shiftCounts].map(([id, value]) => ({ id, label: id.charAt(0) + id.slice(1).toLowerCase(), count: value })),
+    timeline: [...timelineCounts].sort(([left], [right]) => left.localeCompare(right)).map(([weekDate, value]) => ({ id: weekDate, label: weekDate, count: value })),
+    durations: DURATION_RANGES.map((id) => ({ id, label: id === "MAS_DE_120" ? "> 120" : id, count: durationCounts.get(id) || 0 })),
+  };
+  const indicators = {
+    total_incidents: totalIncidents,
+    affected_neighborhoods: neighborhoodCounts.size,
+    affected_trucks: truckCounts.size,
+    most_frequent_reason: reasons[0]?.label || null,
+    average_estimated_delay_minutes: delayCount ? delaySum / delayCount : null,
+    association_rules: mined.totalRuleCount,
+    programmed_services_in_period: expected.total,
+    affected_programmed_service_occurrences: affectedOccurrences.size,
+    retired_incidents: retiredIncidents,
+    compressed_transaction_profiles: new Set(
+      [...transactionProfiles.values()].map((profile) => keyOf(profile.items)),
+    ).size,
+    normalized_rates_applicable: false,
+    synthetic_seed: configuration.seed,
+    synthetic_records_generated: configuration.count,
+    synthetic_unique_ids: configuration.count,
+    synthetic_first_id: firstSyntheticId,
+    synthetic_last_id: lastSyntheticId,
+  };
+  const analysis = {
+    mode: "demo",
+    unit_of_analysis: "Una transacción por registro sintético único; los perfiles idénticos se comprimen con un peso entero y Apriori conserva el conteo equivalente a su expansión individual.",
+    period: bounds,
+    filters: {
+      startDate: appliedFilters.startDate || null,
+      endDate: appliedFilters.endDate || null,
+      neighborhoodId: appliedFilters.neighborhoodId || null,
+      truckId: appliedFilters.truckId || null,
+    },
+    record_count: totalIncidents,
+    transaction_count: totalIncidents,
+    indicators,
+    charts,
+    rules: mined.rules,
+    rule_count: mined.totalRuleCount,
+    frequent_itemset_count: mined.frequentItemsets.length,
+    insufficient_data: mined.insufficientData,
+    parameters: mined.parameters,
+    findings: buildFindings("demo", indicators, charts, mined.rules),
+  };
+  const finished = typeof performance !== "undefined" ? performance.now() : Date.now();
+  analysis.indicators.processing_duration_ms = Math.round((finished - started) * 100) / 100;
+  analysis.synthetic_dataset = {
+    seed: configuration.seed,
+    generated_records: configuration.count,
+    unique_ids: configuration.count,
+    first_id: firstSyntheticId,
+    last_id: lastSyntheticId,
+    period: configuration.period,
+    processing: "Generación determinista en flujo, acumulación incremental y perfiles de transacción ponderados.",
+  };
+  return analysis;
 }
 
 export {
   DAY_NAMES,
   REASON_LABELS,
+  analyzeDemoDataset,
   analyzeIncidents,
   apriori,
   createDemoIncidents,
+  demoIncidentSequence,
   durationRange,
   normalizeAprioriParameters,
   transactionForIncident,

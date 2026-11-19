@@ -19,8 +19,8 @@ const protectedHashes = {
   "web/admin/admin-core.js": "66794dc48635fa40a47e5c645c578ee959be00881ae62cc50abdf2aaa3ed8576",
   "web/admin/admin.js": "86c8e445e32fbd3d0a39549176da52296cc729dc8f822b6a01468fd37175841f",
   "web/config.js": "ef8bad501d1d4c47e996baf2e53e92103b2f966c08f45d817aacae884f678c38",
-  "supabase/functions/mining-analysis/index.ts": "4c94be55a18b334e8e2a02d332b37afcdeef1ae4d4d45b3ab079ffb6122fe274",
-  "supabase/functions/_shared/mining-engine.mjs": "762fa333469be3746ed9fe92c01626f79bbfb5a1a1f3035d9404bd63638d6669",
+  "supabase/functions/mining-analysis/index.ts": "581b9296368f6ef6ea7185f166c0ec573ddcf091cf9b262bdfad422ace358d62",
+  "supabase/functions/_shared/mining-engine.mjs": "539bd813b8da6c24ecb5b4f26eed93c9e62c84a4b99d68446efdc3ab9e35f296",
   ".github/workflows/mining-weekly.yml": "cdf4bb490ebf92c944b1056532c96f95f76f1be9022c4cf23143669805630396",
   "supabase/migrations/0001_alerta_ruta_schema.sql": "0b61155b47bdc01b2a83f6ff3b944adf7e279d2a434d59f23be932d261017087",
   "supabase/migrations/0002_catalog.sql": "b70bcc1737ebb74cb61c8969e9687b3c1e8257b2d58b2bf4c35d10db6accffb3",
@@ -28,7 +28,7 @@ const protectedHashes = {
 };
 
 for (const [relativePath, expected] of Object.entries(protectedHashes)) {
-  assert.equal(hash(relativePath), expected, `El rediseño no debe modificar ${relativePath}`);
+  assert.equal(hash(relativePath), expected, `La fase no debe modificar sin control ${relativePath}`);
 }
 
 const pages = [
@@ -47,7 +47,7 @@ for (const [relativePath, themePath, faviconPath, logoPath] of pages) {
 
 const requiredPublicIds = ["barrio-count", "barrio-search", "barrio-select", "search-status", "result", "service-status", "open-map", "main-map", "map-tabs", "map-dialog", "dialog-image"];
 const requiredAdminIds = ["login-form", "incident-form", "target-type", "target-id", "incident-state", "reason-code", "publish-button", "status-filter", "alerts-body", "logout"];
-const requiredMiningIds = ["refresh-analysis", "data-mode", "period-start", "period-end", "neighborhood-filter", "truck-filter", "neighborhood-chart", "timeline-chart", "rules-list", "findings-list", "logout"];
+const requiredMiningIds = ["refresh-analysis", "data-mode", "period-start", "period-end", "neighborhood-filter", "truck-filter", "analysis-period-start", "analysis-period-end", "analysis-execution-at", "analysis-execution-type", "neighborhood-chart", "timeline-chart", "rules-list", "findings-list", "logout"];
 
 for (const [relativePath, ids] of [["web/index.html", requiredPublicIds], ["web/admin/index.html", requiredAdminIds], ["web/admin/mineria/index.html", requiredMiningIds]]) {
   const html = read(relativePath);
@@ -61,6 +61,12 @@ for (const asset of [
   "web/assets/illustrations/santa-cruz-smart-city.webp",
   "web/assets/illustrations/santa-cruz-smart-city-960.webp",
 ]) assert.ok(fs.statSync(path.join(root, asset)).size > 0, `Recurso vacío: ${asset}`);
+
+const styles = read("web/styles.css");
+assert.match(styles, /\.hero \{[^}]*min-height: 520px/);
+assert.match(styles, /\.search-panel \{[^}]*grid-template-columns: 1\.2fr 1fr/);
+assert.match(styles, /@media \(max-width: 720px\)[\s\S]*?\.hero \{ min-height: 560px/);
+assert.match(styles, /\.day-card \{[^}]*min-height: 112px/);
 
 const controls = [];
 const listeners = {};

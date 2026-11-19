@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="noindex,nofollow" />
     <meta name="theme-color" content="#F1F5F7" />
-    <title>Minería de datos · Alerta Ruta</title>
+    <title>Análisis exploratorio · Alerta Ruta</title>
     <link rel="icon" type="image/png" href="../../assets/brand/favicon.png" />
     <script src="../../theme.js"></script>
     <link rel="stylesheet" href="../../styles.css" />
@@ -15,12 +15,13 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" integrity="sha384-vsrfeLOOY6KuIYKDlmVH5UiBmgIdB1oEf7p01YgWHuqmOHfZr374+odEv96n9tNC" crossorigin="anonymous" defer></script>
     <script src="../../config.js" defer></script>
     <script src="../admin-core.js" defer></script>
+    <script src="mining-view.js" defer></script>
     <script src="mining.js" defer></script>
   </head>
   <body class="admin-body">
     <a class="skip-link" href="#mining-main">Saltar al contenido</a>
     <header class="admin-header">
-      <a class="brand" href="../../"><span class="brand-icon"><img src="../../assets/brand/alerta-ruta-mark.webp" alt="" width="52" height="52" /></span><span><strong>Alerta Ruta</strong><small>Panel de minería de datos</small></span></a>
+      <a class="brand" href="../../"><span class="brand-icon"><img src="../../assets/brand/alerta-ruta-mark.webp" alt="" width="52" height="52" /></span><span><strong>Alerta Ruta</strong><small>Panel de análisis exploratorio</small></span></a>
       <div><span id="session-user"></span><button id="logout" class="ghost-button" type="button" hidden>Cerrar sesión</button><button class="theme-toggle" type="button" data-theme-toggle aria-label="Cambiar tema" aria-pressed="false"><svg class="sun-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.5"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg><svg class="moon-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.3 15.4A8.5 8.5 0 0 1 8.6 3.7a8.5 8.5 0 1 0 11.7 11.7Z"></path></svg><span class="visually-hidden">Cambiar tema</span></button></div>
     </header>
 
@@ -44,18 +45,31 @@
       <section id="dashboard" hidden>
         <nav class="admin-tabs" aria-label="Secciones de administración">
           <a href="../">Gestión de alertas</a>
-          <a class="active" href="./" aria-current="page">Minería de datos</a>
+          <a class="active" href="./" aria-current="page">Análisis exploratorio</a>
         </nav>
 
         <div class="mining-title">
-          <div><p class="eyebrow">Distrito Municipal N.º 2</p><h1>Minería de datos</h1><p>Descriptivos, tasas sobre servicios programados y reglas de asociación Apriori.</p></div>
+          <div><p class="eyebrow">Distrito Municipal N.º 2</p><h1>Análisis exploratorio</h1><p>Estadísticas descriptivas y reglas de asociación Apriori sobre datos claramente identificados.</p></div>
           <button id="refresh-analysis" class="primary-button update-button" type="button">Actualizar análisis</button>
         </div>
+        <section class="analysis-metadata" aria-label="Periodo y ejecución del análisis">
+          <article>
+            <p class="eyebrow">Periodo analizado</p>
+            <h2 id="analysis-period-status">Sin resultado cargado</h2>
+            <dl><div><dt>Desde</dt><dd id="analysis-period-start">—</dd></div><div><dt>Hasta</dt><dd id="analysis-period-end">—</dd></div></dl>
+          </article>
+          <article>
+            <p class="eyebrow">Fecha y hora de ejecución</p>
+            <h2 id="analysis-execution-at">—</h2>
+            <dl><div><dt>Inicio</dt><dd id="analysis-started-at">—</dd></div><div><dt>Origen</dt><dd id="analysis-execution-type">—</dd></div></dl>
+            <small>Zona horaria: America/La_Paz</small>
+          </article>
+        </section>
         <p id="analysis-message" class="analysis-message" role="status" aria-live="polite"></p>
 
         <aside id="mode-notice" class="mode-notice demo" role="note">
           <strong>DATOS SINTÉTICOS — DEMOSTRACIÓN ACADÉMICA</strong>
-          <span>Dataset reproducible generado con semilla fija; no se mezcla con las incidencias registradas.</span>
+          <span>Un millón de registros reproducibles con semilla fija; no se mezclan con las incidencias registradas.</span>
         </aside>
 
         <section class="filter-card" aria-labelledby="filter-title">
@@ -76,15 +90,15 @@
               <label>Máximo de reglas<input id="max-rules" type="number" min="1" max="100" step="1" value="30" /></label>
             </div>
           </details>
-          <p class="filter-help">Los filtros y umbrales se aplican al pulsar “Actualizar análisis”. Cada resultado queda persistido como una corrida nueva.</p>
+          <p class="filter-help">Los filtros y umbrales se aplican al pulsar “Actualizar análisis”. Cada resultado queda guardado como una ejecución nueva.</p>
         </section>
 
         <section class="kpi-grid" aria-label="Indicadores principales">
-          <article class="kpi"><span>Incidencias únicas</span><strong id="kpi-incidents">—</strong><small>Una vez por ID, no por edición</small></article>
+          <article class="kpi"><span id="kpi-records-label">Registros analizados</span><strong id="kpi-incidents">—</strong><small id="kpi-records-note">Una transacción por identificador</small></article>
           <article class="kpi"><span>Barrios afectados</span><strong id="kpi-neighborhoods">—</strong><small>Una incidencia puede afectar varios</small></article>
           <article class="kpi"><span>Camiones afectados</span><strong id="kpi-trucks">—</strong><small>Identificadores simulados</small></article>
           <article class="kpi"><span>Motivo más frecuente</span><strong id="kpi-reason">—</strong><small>Según registros analizados</small></article>
-          <article class="kpi"><span>Demora estimada promedio</span><strong id="kpi-delay">—</strong><small>Sólo incidencias con estimación</small></article>
+          <article class="kpi"><span>Demora estimada promedio</span><strong id="kpi-delay">—</strong><small>Solo incidencias con estimación</small></article>
           <article class="kpi"><span>Reglas identificadas</span><strong id="kpi-rules">—</strong><small>Superan los umbrales configurados</small></article>
           <article class="kpi"><span>Último análisis</span><strong id="kpi-updated">—</strong><small id="kpi-execution">—</small></article>
         </section>
@@ -93,13 +107,13 @@
           <div><span>Servicios programados en el periodo</span><strong id="programmed-services">—</strong></div>
           <div><span>Servicios programados afectados</span><strong id="affected-services">—</strong></div>
           <div><span>Incidencias retiradas conservadas</span><strong id="retired-incidents">—</strong></div>
-          <p>Son ocurrencias esperadas según el calendario semanal, no servicios confirmados. El esquema distingue retiradas, pero aún no etiqueta cancelaciones o pruebas; el análisis no las infiere.</p>
+          <p id="service-summary-note">Son ocurrencias esperadas según el calendario semanal, no servicios confirmados. El análisis no infiere cancelaciones ni cumplimiento.</p>
         </section>
 
         <section class="chart-grid" aria-label="Visualizaciones calculadas">
           <article class="chart-card wide"><div><p class="eyebrow">Territorio</p><h2>Barrios con más incidencias</h2></div><div class="chart-box tall"><canvas id="neighborhood-chart" aria-label="Gráfico de incidencias por barrio" role="img"></canvas></div></article>
           <article class="chart-card"><div><p class="eyebrow">Flota simulada</p><h2>Camiones con más incidencias</h2></div><div class="chart-box"><canvas id="truck-chart" aria-label="Gráfico de incidencias por camión" role="img"></canvas></div></article>
-          <article class="chart-card"><div><p class="eyebrow">Causas registradas</p><h2>Principales motivos</h2></div><div class="chart-box"><canvas id="reason-chart" aria-label="Gráfico de motivos de incidencia" role="img"></canvas></div></article>
+          <article class="chart-card"><div><p class="eyebrow">Motivos registrados</p><h2>Principales motivos</h2></div><div class="chart-box"><canvas id="reason-chart" aria-label="Gráfico de motivos de incidencia" role="img"></canvas></div></article>
           <article class="chart-card"><div><p class="eyebrow">Calendario</p><h2>Incidencias por día</h2></div><div class="chart-box"><canvas id="weekday-chart" aria-label="Gráfico de incidencias por día de la semana" role="img"></canvas></div></article>
           <article class="chart-card"><div><p class="eyebrow">Horario programado</p><h2>Incidencias por turno</h2></div><div class="chart-box"><canvas id="shift-chart" aria-label="Gráfico de incidencias por turno" role="img"></canvas></div></article>
           <article class="chart-card wide"><div><p class="eyebrow">Tiempo</p><h2>Evolución semanal</h2></div><div class="chart-box"><canvas id="timeline-chart" aria-label="Gráfico de evolución semanal" role="img"></canvas></div></article>
@@ -107,11 +121,11 @@
         </section>
 
         <section class="analysis-card" aria-labelledby="comparison-title">
-          <div><p class="eyebrow">Comparación justa</p><h2 id="comparison-title">Conteos y tasas normalizadas</h2></div>
-          <p>“Por 100” divide incidencias registradas entre servicios programados esperados en el periodo. No mide cumplimiento real.</p>
+          <div><p class="eyebrow">Contexto del calendario</p><h2 id="comparison-title">Conteos y servicios programados</h2></div>
+          <p id="comparison-note">En el historial, “Por 100” divide incidencias registradas entre servicios programados esperados. No mide cumplimiento real.</p>
           <div class="comparison-grid">
-            <div><h3>Barrios</h3><div class="table-wrap"><table><thead><tr><th>Barrio</th><th>Incidencias</th><th>Programados</th><th>Por 100</th></tr></thead><tbody id="neighborhood-comparison"></tbody></table></div></div>
-            <div><h3>Camiones</h3><div class="table-wrap"><table><thead><tr><th>Camión</th><th>Incidencias</th><th>Programados</th><th>Por 100</th></tr></thead><tbody id="truck-comparison"></tbody></table></div></div>
+            <div><h3>Barrios</h3><div class="table-wrap"><table><thead><tr><th>Barrio</th><th>Registros</th><th>Programados</th><th id="neighborhood-rate-heading">Por 100</th></tr></thead><tbody id="neighborhood-comparison"></tbody></table></div></div>
+            <div><h3>Camiones</h3><div class="table-wrap"><table><thead><tr><th>Camión</th><th>Registros</th><th>Programados</th><th id="truck-rate-heading">Por 100</th></tr></thead><tbody id="truck-comparison"></tbody></table></div></div>
           </div>
         </section>
 
@@ -122,7 +136,7 @@
         </section>
 
         <section class="analysis-card findings-card" aria-labelledby="findings-title">
-          <div><p class="eyebrow">Apoyo a decisiones</p><h2 id="findings-title">Hallazgos y recomendaciones para la gestión operativa</h2></div>
+          <div><p class="eyebrow">Interpretación académica</p><h2 id="findings-title">Hallazgos y preguntas para revisión</h2></div>
           <ul id="findings-list"></ul>
           <p class="method-note"><strong>Límite:</strong> las recomendaciones orientan preguntas para mantenimiento y programación. No diagnostican causas ni prueban desempeño operativo de EMACRUZ.</p>
         </section>

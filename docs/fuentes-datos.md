@@ -41,6 +41,6 @@ Los pesos o volúmenes acumulados no deben llenarse con cifras inventadas. La pr
 | Modalidad | Origen | Unidad | Tratamiento | Limitación |
 | --- | --- | --- | --- | --- |
 | Historial registrado del prototipo | `public.incidents`, unido a `neighborhood_catalog` y `service_catalog` | Una fila actual por `incidents.id` | Incluye retiradas, deduplica IDs y no convierte cada edición de `incident_history` en otra observación | Todo el sistema es un prototipo simulado; no hay ejecución real, causas verificadas ni etiquetas separadas de cancelación/prueba |
-| Demostración académica | Generador determinista en `supabase/functions/_shared/mining-engine.mjs` | 180 incidencias sintéticas | Semilla `20261111`, valores del catálogo y periodo 2026-01-05 a 2026-07-05; se genera en memoria | Las asociaciones diseñadas sirven para comprobar Apriori y nunca se presentan como hallazgos de EMACRUZ |
+| Demostración académica | Generador determinista en `supabase/functions/_shared/mining-engine.mjs` | 1.000.000 de registros sintéticos únicos por ID | Semilla `20261111`, valores del catálogo y periodo 2026-01-05 a 2026-07-05; se procesa en flujo | Las asociaciones diseñadas sirven para comprobar Apriori y nunca se presentan como hallazgos de EMACRUZ |
 
-Los resultados derivados se guardan en `mining_analysis_runs`, separados de las fuentes originales. La tabla almacena agregados y reglas, no copia el dataset sintético a `incidents`.
+Los resultados derivados se guardan en `mining_analysis_runs`, separados de las fuentes originales. La tabla almacena agregados y reglas; no copia el conjunto sintético a `incidents`.

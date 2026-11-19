@@ -1,8 +1,8 @@
-# Fase 3 — minería de datos automatizada
+# Análisis exploratorio y Apriori automatizado
 
 ## Propósito y alcance
 
-El módulo privado `/admin/mineria/` transforma las incidencias del prototipo en descriptivos, comparaciones normalizadas y reglas de asociación. Es una herramienta académica de apoyo a decisiones: no mide la operación real de EMACRUZ, no certifica puntualidad y no atribuye causas.
+El módulo privado `/admin/mineria/`, visible como **Análisis exploratorio**, transforma las incidencias del prototipo en descriptivos, comparaciones normalizadas y reglas de asociación. Es una herramienta académica: no mide la operación real de EMACRUZ, no certifica puntualidad y no atribuye causas.
 
 La página pública, los 26 barrios, las 15 UV, los 104 servicios semanales, los 12 camiones simulados, el visor de mapas y la gestión de alertas conservan sus fuentes y flujos anteriores.
 
@@ -20,7 +20,7 @@ GitHub Actions, lunes 07:00 UTC ───┘          │
 Dashboard privado <── Auth + RLS ────────────────────────────┘
 ```
 
-- `supabase/functions/_shared/mining-engine.mjs`: preparación, dataset sintético, descriptivos, normalización y Apriori. Es el único motor usado por el botón y el cron.
+- `supabase/functions/_shared/mining-engine.mjs`: preparación, conjunto sintético, acumulación incremental, descriptivos y Apriori ponderado. Es el único motor usado por el botón y el cron.
 - `supabase/functions/mining-analysis/index.ts`: autorización, consultas, control de concurrencia, ejecución y persistencia.
 - `supabase/migrations/0003_mining_analysis.sql`: tabla privada, índices y política RLS.
 - `web/admin/mineria/`: dashboard estático privado. La ruta HTML es pública como cualquier archivo de GitHub Pages, pero los datos sólo se obtienen con Auth, pertenencia a `admin_users`, función autorizada y RLS.
@@ -47,11 +47,11 @@ Variables categóricas:
 - `TURNO`: mañana (antes de 11:00), mediodía (11:00–14:59) o tarde (desde 15:00), derivado de la hora de inicio del catálogo;
 - `MOTIVO`: lluvia, falla mecánica, problema técnico u otro;
 - `TIPO`: demora o servicio suspendido;
-- `DURACION`: 1–15, 16–30, 31–60, 61–120 o más de 120 minutos. Sólo se crea si existe una estimación positiva.
+- `DURACION`: 1–15, 16–30, 31–60, 61–120 o más de 120 minutos. Solo se crea si existe una estimación positiva.
 
 La evolución temporal usa `starts_at`. Los días y turnos de las reglas proceden de los servicios programados afectados, no de una supuesta ejecución real.
 
-## Apriori
+## Apriori y transacciones ponderadas
 
 Apriori construye conjuntos frecuentes por niveles. Un candidato de tamaño `k` sólo se evalúa si todos sus subconjuntos de tamaño `k-1` fueron frecuentes. Esto aplica la propiedad de cierre descendente y evita enumerar combinaciones que ya no pueden superar el soporte mínimo.
 
@@ -74,6 +74,14 @@ Cada regla guarda antecedente, consecuente, soporte, confianza, lift y cantidad 
 
 El administrador puede ajustar soporte, confianza, lift y límite de reglas. El servidor restringe los rangos para impedir combinaciones excesivas. Un lift superior a 1 expresa coocurrencia por encima de la esperada bajo independencia; no demuestra causalidad.
 
+En la demostración, cada uno de los 1.000.000 de registros se genera de manera determinista y actualiza los acumuladores. Para no conservar un millón de objetos, las transacciones con los mismos ítems se almacenan una sola vez junto con un peso entero. Al contar un candidato, Apriori suma esos pesos:
+
+```text
+conteo_ponderado(X) = suma de pesos de los perfiles que contienen X
+```
+
+Esta compresión es matemáticamente equivalente a expandir cada perfil tantas veces como indica su peso. Las pruebas comparan ambos métodos con 180 y 5.000 registros, además del caso conocido `[AB, AB, AB, C]`.
+
 ## Comparaciones con servicios programados
 
 Para cada fecha del periodo se generan las ocurrencias esperadas de los 104 servicios según su día semanal. La tasa mostrada es:
@@ -82,13 +90,23 @@ Para cada fecha del periodo se generan las ocurrencias esperadas de los 104 serv
 incidencias por 100 servicios programados = incidencias registradas / ocurrencias programadas × 100
 ```
 
-El denominador es programación simulada, no evidencia de servicio realizado. La interfaz lo identifica expresamente y no lo llama cumplimiento ni puntualidad.
+El denominador es programación simulada, no evidencia de servicio realizado. La interfaz lo identifica expresamente y no lo llama cumplimiento ni puntualidad. Esta tasa solo se ofrece para el historial; en la demostración se omite porque comparar un millón de observaciones artificiales con 104 servicios semanales produciría una cifra engañosa.
 
 ## Modos de datos
 
-### Demostración académica
+### Demostración académica: un millón de registros
 
-El servidor genera en memoria 180 incidencias con semilla fija `20261111`, periodo 5 de enero a 5 de julio de 2026 y valores del catálogo. No se insertan en `incidents`.
+El servidor recorre exactamente 1.000.000 de registros con semilla fija `20261111`, periodo 5 de enero a 5 de julio de 2026 y valores del catálogo. Cada registro recibe un ID secuencial único, desde `DEMO-0000001` hasta `DEMO-1000000`, pero se descarta después de actualizar los acumuladores. No se inserta en `incidents` ni se entrega al navegador.
+
+Distribución reproducible:
+
+- servicio principal uniforme entre los 104 servicios;
+- semana uniforme entre las 26 semanas del periodo;
+- 18 % de probabilidad de añadir otro servicio compatible del mismo camión y día, cuando existe;
+- 10 % de probabilidad de suspensión; el resto corresponde a demora;
+- 8 % de probabilidad de marcar el registro sintético como retirado;
+- motivo base uniforme, modificado por las asociaciones conocidas;
+- demora de 10 a 120 minutos como base, con rangos específicos para las asociaciones diseñadas.
 
 Se diseñaron coocurrencias reproducibles para comprobar el método, entre ellas:
 
@@ -96,7 +114,7 @@ Se diseñaron coocurrencias reproducibles para comprobar el método, entre ellas
 - Santa Clara o La Santa Cruz con lluvia en parte de las observaciones;
 - turnos de tarde con problemas técnicos en parte de las observaciones.
 
-No se hardcodean reglas ni métricas: el test exige que Apriori recupere la asociación de `SIM-C01` y falla mecánica a partir de las transacciones generadas. La interfaz mantiene el rótulo **DATOS SINTÉTICOS — DEMOSTRACIÓN ACADÉMICA**.
+No se escriben reglas ni métricas prefabricadas: la prueba exige que Apriori recupere la asociación de `SIM-C01` y falla mecánica a partir de las transacciones generadas. La interfaz mantiene el rótulo **DATOS SINTÉTICOS — DEMOSTRACIÓN ACADÉMICA**.
 
 ### Historial registrado del prototipo
 
@@ -106,39 +124,44 @@ Limitación vigente: el esquema distingue retiradas mediante `retired_at`, pero 
 
 ## Flujo manual
 
-1. El administrador entra en `/admin/` y abre **Minería de datos**. La sesión se conserva en el mismo origen.
+1. El administrador entra en `/admin/` y abre **Análisis exploratorio**. La sesión se conserva en el mismo origen.
 2. El módulo vuelve a comprobar Auth y `admin_users`.
 3. **Actualizar análisis** se desactiva y muestra “Calculando análisis…”.
-4. La Edge Function valida la sesión, crea una corrida `RUNNING`, ejecuta y guarda el resultado.
-5. Sólo después de guardar cambia a `COMPLETED` y el navegador muestra confirmación, fecha y datos nuevos.
-6. Un índice parcial impide dos corridas simultáneas del mismo modo. Una corrida abandonada por más de 20 minutos se marca `FAILED` antes de reintentar.
+4. La Edge Function valida la sesión, crea una ejecución `RUNNING`, calcula y guarda el resultado.
+5. Solo después de guardar cambia a `COMPLETED` y el navegador muestra la confirmación y los datos nuevos.
+6. Un índice parcial impide dos ejecuciones simultáneas del mismo modo. Una ejecución abandonada por más de 20 minutos se marca `FAILED` antes de reintentar.
+
+La cabecera diferencia dos conceptos:
+
+- **Periodo analizado:** usa `period_start` y `period_end`; si no hay registros, ambos permanecen nulos y la interfaz lo indica.
+- **Fecha y hora de ejecución:** usa `started_at` y `completed_at`, con formato `DD/MM/AAAA HH:MM` en `America/La_Paz`, e indica si el origen fue manual o automático.
 
 ## Automatización semanal
 
-GitHub Actions llama la misma función con `{"mode":"history"}`. El cron no necesita una computadora encendida ni tokens de GitHub en el frontend. `MINING_SCHEDULE_SECRET` autentica sólo la invocación; la credencial privada de base permanece en Supabase.
+GitHub Actions llama la misma función con `{"mode":"history"}`. El cron no necesita una computadora encendida ni tokens de GitHub en el frontend. `MINING_SCHEDULE_SECRET` autentica solo la invocación; la credencial privada de base permanece en Supabase.
 
 La invocación programada equivalente fue comprobada remotamente el 11/11/2026: produjo una fila `COMPLETED`, `execution_type = scheduled`, `mode = history`, 5 transacciones y el mensaje esperado de datos insuficientes. El workflow fue validado con `actionlint`; después del primer push se debe ejecutar `workflow_dispatch` y conservar además el log de GitHub Actions.
 
 ## Seguridad
 
 - `anon` no tiene privilegios sobre `mining_analysis_runs`.
-- `authenticated` sólo tiene `SELECT`; RLS entrega filas únicamente si `is_alerta_ruta_admin()` es verdadero.
-- El navegador no puede insertar, actualizar o borrar corridas.
-- La función acepta un JWT válido de administrador o el secreto del cron; nunca confía sólo en un botón oculto.
+- `authenticated` solo tiene `SELECT`; RLS entrega filas únicamente si `is_alerta_ruta_admin()` es verdadero.
+- El navegador no puede insertar, actualizar o borrar ejecuciones.
+- La función acepta un JWT válido de administrador o el secreto del cron; nunca confía solo en un botón oculto.
 - La clave `sb_secret_...` es leída mediante `SUPABASE_SECRET_KEYS` dentro de Supabase.
 - Los resultados sintéticos no se insertan en las incidencias operativas.
 - La función usa una lista CORS, aunque la autorización real sigue siendo Auth/secreto y RLS.
 
 ## Configuración de despliegue
 
-Realizar estos pasos sólo después de una revisión Jira `APROBADO` sobre el diff exacto. En el proyecto actual, `0003`, `mining-analysis` y `MINING_SCHEDULE_SECRET` ya fueron configurados y validados de forma segura el 11/11/2026; los pasos se conservan para reproducir o rotar la instalación:
+Realizar estos pasos solo después de una revisión Jira `APROBADO` sobre el diff exacto. En el proyecto actual, `0003`, `mining-analysis` y `MINING_SCHEDULE_SECRET` ya fueron configurados y validados de forma segura el 11/11/2026; los pasos se conservan para reproducir o rotar la instalación:
 
 1. Supabase Dashboard → **SQL Editor**: aplicar `supabase/migrations/0003_mining_analysis.sql`, o ejecutar `npx supabase db push` con el proyecto correcto vinculado.
 2. Supabase Dashboard → **Edge Functions → Secrets**: crear `MINING_SCHEDULE_SECRET` con un valor aleatorio de al menos 32 caracteres. No pegarlo en código, issues ni conversación.
 3. GitHub → repositorio `proyecto-emacruz` → **Settings → Secrets and variables → Actions → New repository secret**: crear también `MINING_SCHEDULE_SECRET` con exactamente el mismo valor.
 4. Desplegar `mining-analysis` con la configuración del repositorio. `verify_jwt = false` es intencional porque la función valida por código el JWT o el secreto del cron.
 5. Abrir `/admin/mineria/`, confirmar que la sesión se conserva y ejecutar ambos modos.
-6. GitHub → **Actions → Actualizar minería semanal → Run workflow**: lanzar una prueba. Confirmar una corrida `COMPLETED`, `execution_type = scheduled` y `mode = history`.
+6. GitHub → **Actions → Actualizar minería semanal → Run workflow**: lanzar una prueba. Confirmar una ejecución `COMPLETED`, `execution_type = scheduled` y `mode = history`.
 
 No hace falta crear ni copiar una clave secret de Supabase a GitHub.
 
@@ -151,14 +174,16 @@ No hace falta crear ni copiar una clave secret de Supabase a GitHub.
 5. Comparar conteo y tasa por 100 servicios programados, aclarando que el denominador es calendario esperado.
 6. Cambiar a historial y mostrar que, con pocos datos, el sistema no inventa reglas.
 7. Mostrar fecha, tipo de ejecución y persistencia tras recargar.
-8. Cerrar con seguridad: Auth, `admin_users`, RLS y ejecución del algoritmo sólo en servidor.
+8. Cerrar con seguridad: Auth, `admin_users`, RLS y ejecución del algoritmo solo en el servidor.
 
 ## Pruebas
 
 ```bash
 node tests/test_mining_engine.mjs
 node tests/test_mining_integration.mjs
+node tests/test_mining_frontend.js
+node scripts/benchmark_mining.mjs
 python scripts/validate_supabase_sql.py --check
 ```
 
-`test_mining_engine.mjs` usa un dataset conocido donde `A → B` tiene soporte 0,75, confianza 1 y lift 4/3; también prueba semilla fija, asociación sintética, rangos y no duplicación por edición.
+`test_mining_engine.mjs` usa un conjunto conocido donde `A → B` tiene soporte 0,75, confianza 1 y lift 4/3; también prueba equivalencia ponderada, el millón exacto, semilla fija, asociación sintética, siete series, periodo vacío y no duplicación por edición. `benchmark_mining.mjs` informa tiempo, memoria residente máxima y cantidad de perfiles comprimidos sin escribir datos.

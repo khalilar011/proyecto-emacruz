@@ -2,12 +2,16 @@
 
 const config = window.ALERTA_RUTA_CONFIG || {};
 const adminCore = window.AlertaRutaAdminCore;
+const miningView = window.AlertaRutaMiningView;
 const elements = Object.fromEntries([
   "setup-panel", "access-panel", "access-message", "dashboard", "session-user", "logout",
   "refresh-analysis", "analysis-message", "mode-notice", "data-mode", "period-start", "period-end",
   "neighborhood-filter", "truck-filter", "min-support", "min-confidence", "min-lift", "max-rules",
   "kpi-incidents", "kpi-neighborhoods", "kpi-trucks", "kpi-reason", "kpi-delay", "kpi-rules",
-  "kpi-updated", "kpi-execution", "programmed-services", "affected-services", "retired-incidents",
+  "kpi-updated", "kpi-execution", "kpi-records-label", "kpi-records-note",
+  "analysis-period-status", "analysis-period-start", "analysis-period-end", "analysis-execution-at",
+  "analysis-started-at", "analysis-execution-type", "programmed-services", "affected-services", "retired-incidents",
+  "service-summary-note", "comparison-title", "comparison-note", "neighborhood-rate-heading", "truck-rate-heading",
   "neighborhood-comparison", "truck-comparison", "rule-count", "rule-intro", "rules-list", "findings-list",
 ].map((id) => [id.replaceAll("-", "_"), document.getElementById(id)]));
 
@@ -24,13 +28,6 @@ function setMessage(message, error = false) {
 function formatNumber(value, digits = 0) {
   if (value === null || value === undefined || Number.isNaN(Number(value))) return "—";
   return new Intl.NumberFormat("es-BO", { maximumFractionDigits: digits, minimumFractionDigits: digits }).format(Number(value));
-}
-
-function formatDate(value) {
-  if (!value) return "—";
-  return new Intl.DateTimeFormat("es-BO", {
-    timeZone: "America/La_Paz", dateStyle: "medium", timeStyle: "short",
-  }).format(new Date(value));
 }
 
 function option(value, label) {
@@ -51,19 +48,21 @@ async function loadCatalog() {
   elements.truck_filter.append(...trucks.map((truck) => option(truck, truck)));
 }
 
-function showModeNotice(mode, recordCount = null) {
+function showModeNotice(mode, recordCount = null, generatedCount = 1_000_000) {
   elements.mode_notice.replaceChildren();
   const strong = document.createElement("strong");
   const detail = document.createElement("span");
   if (mode === "demo") {
     elements.mode_notice.className = "mode-notice demo";
     strong.textContent = "DATOS SINTÉTICOS — DEMOSTRACIÓN ACADÉMICA";
-    detail.textContent = "Dataset reproducible con semilla fija; no se inserta ni se mezcla con public.incidents.";
+    detail.textContent = recordCount === null
+      ? `${formatNumber(generatedCount)} registros reproducibles con semilla fija; no se insertan ni se mezclan con public.incidents.`
+      : `Se generaron ${formatNumber(generatedCount)} registros; ${formatNumber(recordCount)} cumplieron los filtros. No se insertan ni se mezclan con public.incidents.`;
   } else {
     elements.mode_notice.className = "mode-notice history";
     strong.textContent = "HISTORIAL REGISTRADO DEL PROTOTIPO";
     detail.textContent = recordCount === null
-      ? "Sólo incidencias almacenadas; no se presenta como dato operativo real de EMACRUZ."
+      ? "Solo incidencias almacenadas; no se presentan como datos operativos reales de EMACRUZ."
       : `${recordCount} incidencias únicas analizadas; incluye retiradas y usa la versión actual de cada ID.`;
   }
   elements.mode_notice.append(strong, detail);
@@ -88,7 +87,7 @@ function chartConfig(type, rows, options = {}) {
     data: {
       labels: rows.map((row) => row.label),
       datasets: [{
-        label: "Incidencias",
+        label: options.datasetLabel || "Registros",
         data: rows.map((row) => row.count),
         backgroundColor: type === "doughnut" ? rows.map((_, index) => colors[index % colors.length]) : theme.fill,
         borderColor: theme.line,
@@ -104,7 +103,7 @@ function chartConfig(type, rows, options = {}) {
       indexAxis: options.horizontal ? "y" : "x",
       plugins: {
         legend: { display: type === "doughnut", position: "bottom", labels: { color: theme.text } },
-        tooltip: { callbacks: { label: (context) => `${context.label}: ${context.raw} incidencia(s)` } },
+        tooltip: { callbacks: { label: (context) => `${context.label}: ${context.raw} registro(s)` } },
       },
       scales: type === "doughnut" ? {} : {
         y: { beginAtZero: true, ticks: { precision: 0, color: theme.text }, grid: { color: theme.grid } },
@@ -128,15 +127,17 @@ function cell(text, label) {
   return item;
 }
 
-function renderComparison(body, rows, firstLabel) {
+function renderComparison(body, rows, firstLabel, normalizedRates) {
   body.replaceChildren();
   for (const row of (rows || []).slice(0, 12)) {
     const tr = document.createElement("tr");
     tr.append(
       cell(row.label, firstLabel),
-      cell(formatNumber(row.count), "Incidencias"),
+      cell(formatNumber(row.count), "Registros"),
       cell(formatNumber(row.programmed_services), "Programados"),
-      cell(row.incidents_per_100_programmed === null ? "—" : formatNumber(row.incidents_per_100_programmed, 1), "Por 100"),
+      cell(normalizedRates && row.incidents_per_100_programmed !== null
+        ? formatNumber(row.incidents_per_100_programmed, 1)
+        : "No aplica", "Por 100"),
     );
     body.append(tr);
   }
@@ -194,11 +195,51 @@ function renderFindings(run) {
   }
 }
 
+function renderRunMetadata(run) {
+  const values = miningView.metadata(run);
+  elements.analysis_period_status.textContent = values.periodStatus;
+  elements.analysis_period_start.textContent = values.periodStart;
+  elements.analysis_period_end.textContent = values.periodEnd;
+  elements.analysis_execution_at.textContent = values.executionAt;
+  elements.analysis_started_at.textContent = values.startedAt;
+  elements.analysis_execution_type.textContent = values.executionType;
+}
+
+function resetRenderedRun() {
+  lastRenderedRun = null;
+  renderRunMetadata(null);
+  for (const element of [
+    elements.kpi_incidents, elements.kpi_neighborhoods, elements.kpi_trucks, elements.kpi_reason,
+    elements.kpi_delay, elements.kpi_rules, elements.kpi_updated, elements.kpi_execution,
+    elements.programmed_services, elements.affected_services, elements.retired_incidents,
+  ]) element.textContent = "—";
+  for (const chart of Object.values(charts)) chart.destroy();
+  charts = {};
+  elements.neighborhood_comparison.replaceChildren();
+  elements.truck_comparison.replaceChildren();
+  elements.rules_list.replaceChildren();
+  elements.findings_list.replaceChildren();
+  elements.rule_count.textContent = "— reglas";
+  elements.period_start.value = "";
+  elements.period_end.value = "";
+  elements.neighborhood_filter.value = "";
+  elements.truck_filter.value = "";
+}
+
 function renderRun(run) {
   lastRenderedRun = run;
   const indicators = run.indicators || {};
   const chartData = run.chart_data || {};
-  showModeNotice(run.mode, run.record_count);
+  const demoMode = run.mode === "demo";
+  const normalizedRates = !demoMode && indicators.normalized_rates_applicable !== false;
+  showModeNotice(run.mode, run.record_count, indicators.synthetic_records_generated || 1_000_000);
+  renderRunMetadata(run);
+  elements.period_start.value = run.filters?.startDate || "";
+  elements.period_end.value = run.filters?.endDate || "";
+  elements.neighborhood_filter.value = run.filters?.neighborhoodId || "";
+  elements.truck_filter.value = run.filters?.truckId || "";
+  elements.kpi_records_label.textContent = demoMode ? "Registros sintéticos" : "Incidencias únicas";
+  elements.kpi_records_note.textContent = demoMode ? "Prueba académica de procesamiento" : "Una vez por ID, no por edición";
   elements.kpi_incidents.textContent = formatNumber(indicators.total_incidents);
   elements.kpi_neighborhoods.textContent = formatNumber(indicators.affected_neighborhoods);
   elements.kpi_trucks.textContent = formatNumber(indicators.affected_trucks);
@@ -206,27 +247,38 @@ function renderRun(run) {
   elements.kpi_delay.textContent = indicators.average_estimated_delay_minutes === null || indicators.average_estimated_delay_minutes === undefined
     ? "Sin estimaciones" : `${formatNumber(indicators.average_estimated_delay_minutes, 1)} min`;
   elements.kpi_rules.textContent = formatNumber(indicators.association_rules);
-  elements.kpi_updated.textContent = formatDate(run.completed_at);
-  elements.kpi_execution.textContent = run.execution_type === "scheduled" ? "Ejecución semanal automática" : "Actualización manual";
+  elements.kpi_updated.textContent = miningView.formatDateTime(run.completed_at);
+  elements.kpi_execution.textContent = miningView.executionType(run.execution_type);
   elements.programmed_services.textContent = formatNumber(indicators.programmed_services_in_period);
   elements.affected_services.textContent = formatNumber(indicators.affected_programmed_service_occurrences);
   elements.retired_incidents.textContent = formatNumber(indicators.retired_incidents);
 
-  renderChart("neighborhood-chart", "bar", chartData.neighborhoods || [], { horizontal: true });
-  renderChart("truck-chart", "bar", chartData.trucks || []);
-  renderChart("reason-chart", "doughnut", chartData.reasons || []);
-  renderChart("weekday-chart", "bar", chartData.weekdays || []);
-  renderChart("shift-chart", "bar", chartData.shifts || []);
-  renderChart("timeline-chart", "line", chartData.timeline || []);
-  renderChart("duration-chart", "bar", chartData.durations || []);
-  renderComparison(elements.neighborhood_comparison, chartData.neighborhoods, "Barrio");
-  renderComparison(elements.truck_comparison, chartData.trucks, "Camión");
+  const datasetLabel = demoMode ? "Registros sintéticos" : "Incidencias registradas";
+  renderChart("neighborhood-chart", "bar", chartData.neighborhoods || [], { horizontal: true, datasetLabel });
+  renderChart("truck-chart", "bar", chartData.trucks || [], { datasetLabel });
+  renderChart("reason-chart", "doughnut", chartData.reasons || [], { datasetLabel });
+  renderChart("weekday-chart", "bar", chartData.weekdays || [], { datasetLabel });
+  renderChart("shift-chart", "bar", chartData.shifts || [], { datasetLabel });
+  renderChart("timeline-chart", "line", chartData.timeline || [], { datasetLabel });
+  renderChart("duration-chart", "bar", chartData.durations || [], { datasetLabel });
+  elements.comparison_title.textContent = demoMode ? "Conteos sintéticos y calendario de referencia" : "Conteos y tasas normalizadas";
+  elements.comparison_note.textContent = demoMode
+    ? "Los conteos sintéticos prueban el procesamiento. No se calculan tasas operativas contra los servicios semanales porque serían artificiales y no comparables."
+    : "“Por 100” divide incidencias registradas entre servicios programados esperados en el periodo. No mide cumplimiento real.";
+  elements.neighborhood_rate_heading.textContent = demoMode ? "Tasa" : "Por 100";
+  elements.truck_rate_heading.textContent = demoMode ? "Tasa" : "Por 100";
+  elements.service_summary_note.textContent = demoMode
+    ? "El millón es una prueba sintética de procesamiento. Los servicios programados solo describen el calendario de referencia; no son un denominador operativo comparable."
+    : "Son ocurrencias esperadas según el calendario semanal, no servicios confirmados. El análisis no infiere cancelaciones ni cumplimiento.";
+  renderComparison(elements.neighborhood_comparison, chartData.neighborhoods, "Barrio", normalizedRates);
+  renderComparison(elements.truck_comparison, chartData.trucks, "Camión", normalizedRates);
   renderRules(run);
   renderFindings(run);
 }
 
 async function loadLatest() {
   setMessage("Cargando el último análisis persistido…");
+  resetRenderedRun();
   const mode = elements.data_mode.value;
   showModeNotice(mode);
   const { data, error } = await client.from("mining_analysis_runs")
@@ -246,7 +298,9 @@ async function loadLatest() {
   }
   try {
     renderRun(data);
-    setMessage(`Resultado persistido cargado. Periodo: ${data.period_start || "sin inicio"} a ${data.period_end || "sin fin"}.`);
+    setMessage(data.record_count
+      ? `Resultado persistido cargado: ${miningView.formatPeriodDate(data.period_start)} a ${miningView.formatPeriodDate(data.period_end)}.`
+      : "Resultado persistido cargado sin registros para el periodo seleccionado.");
   } catch (error) {
     setMessage(`No se pudo dibujar el resultado: ${error.message}`, true);
   }
