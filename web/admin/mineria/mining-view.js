@@ -40,10 +40,12 @@
       executionType: "—",
     };
     const hasRecords = Number(run.record_count) > 0;
+    const periodStart = hasRecords ? formatPeriodDate(run.period_start) : "—";
+    const periodEnd = hasRecords ? formatPeriodDate(run.period_end) : "—";
     return {
-      periodStatus: hasRecords ? "Registros incluidos" : "Sin registros para el periodo",
-      periodStart: hasRecords ? formatPeriodDate(run.period_start) : "—",
-      periodEnd: hasRecords ? formatPeriodDate(run.period_end) : "—",
+      periodStatus: hasRecords ? `${periodStart} – ${periodEnd}` : "Sin registros para el periodo",
+      periodStart,
+      periodEnd,
       executionAt: formatDateTime(run.completed_at || run.started_at),
       startedAt: formatDateTime(run.started_at),
       executionType: executionType(run.execution_type),

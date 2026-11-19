@@ -114,7 +114,7 @@ La web pública recibe el cambio por Realtime o en la consulta periódica. El ho
 
 Una cuenta incluida en `admin_users` puede abrir **Análisis exploratorio** sin volver a iniciar sesión. El modo demostración genera y procesa exactamente 1.000.000 de registros sintéticos con semilla fija, sin insertarlos en `incidents` ni enviarlos al navegador; el modo historial usa una fila actual por incidencia y conserva las retiradas. El motor acumula estadísticas en flujo, comprime perfiles equivalentes con conteos ponderados y ejecuta Apriori con resultados idénticos a la expansión individual. El botón solo confirma el éxito después de guardar la ejecución.
 
-La demostración cubre del 05/01/2026 al 05/07/2026 y usa la semilla `20261111`. Es una prueba académica de procesamiento, no un millón de incidencias reales. Por eso sus conteos no se presentan como tasas de puntualidad o cumplimiento respecto a los 104 servicios semanales. El panel muestra por separado el periodo cubierto y la fecha/hora de ejecución en `America/La_Paz`.
+La demostración cubre del 01/01/2005 al 19/11/2026 y usa la semilla `20261111`. Es una prueba académica de procesamiento, no un millón de incidencias reales. Por eso sus conteos no se presentan como tasas de puntualidad o cumplimiento respecto a los 104 servicios semanales. El panel muestra por separado el periodo cubierto, el total confirmado y la fecha/hora de ejecución en `America/La_Paz`.
 
 El cron de GitHub Actions invoca el mismo motor los lunes a las 07:00 UTC (03:00 en Bolivia). Su despliegue y el secreto compartido se configuran siguiendo [docs/mineria-datos.md](docs/mineria-datos.md). Las asociaciones son descriptivas, no causales, y las tasas usan servicios programados, no servicios efectivamente realizados.
 

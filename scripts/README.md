@@ -8,6 +8,7 @@
 - `verify_supabase_public.py`: usa solo la URL y publishable key de `web/config.js` para comprobar catálogos, lectura pública y denegación anónima de tablas/RPC de escritura.
 - `verify_supabase_frontend.js`: aplica la lógica real de `web/incidents.js` a las incidencias vigentes de Supabase y confirma qué barrios muestran el aviso.
 - `benchmark_mining.mjs`: procesa el millón sintético con el motor real e informa tiempo, memoria residente máxima, perfiles ponderados y reglas, sin escribir filas ni archivos.
+- `export_synthetic_demo.mjs`: recorre y verifica el millón individual, calcula una huella SHA-256 y, opcionalmente, lo exporta en flujo con `--output /ruta/archivo.ndjson`; no escribe en Supabase.
 
 Los scripts usan rutas relativas a la raíz del repositorio. No requieren dependencias nuevas fuera de `openpyxl`, que ya está declarada en `requirements.txt`.
 

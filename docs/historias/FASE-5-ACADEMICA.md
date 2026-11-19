@@ -9,7 +9,7 @@ Como vecino del Distrito Municipal N.º 2 y administrador/comunicador autorizado
 ## Decisiones aprobadas
 
 - El nombre público es **Análisis exploratorio**; la ruta técnica continúa en `/admin/mineria/`.
-- La demostración procesa exactamente 1.000.000 de registros con semilla `20261111` y periodo 05/01/2026–05/07/2026.
+- La demostración procesa exactamente 1.000.000 de registros con semilla `20261111` y periodo 01/01/2005–19/11/2026.
 - Los IDs conceptuales van de `DEMO-0000001` a `DEMO-1000000`.
 - Los registros se generan en flujo y se descartan después de acumular estadísticas; no se insertan en `public.incidents`.
 - Apriori suma pesos enteros de perfiles equivalentes. Las fórmulas y los respaldos son iguales a los de la expansión individual.

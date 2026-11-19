@@ -15,7 +15,7 @@ const maxRssKiB = process.resourceUsage().maxRSS;
 assert.equal(result.record_count, 1_000_000);
 assert.equal(result.transaction_count, 1_000_000);
 assert.equal(result.indicators.synthetic_unique_ids, 1_000_000);
-assert.deepEqual(result.period, { start: "2026-01-05", end: "2026-07-05" });
+assert.deepEqual(result.period, { start: "2005-01-01", end: "2026-11-19" });
 assert.ok(result.rules.length > 0);
 
 console.log(JSON.stringify({

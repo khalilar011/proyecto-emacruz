@@ -393,12 +393,16 @@ function analyzeIncidentIterable({ incidents, catalog, mode = "history", filters
       delaySum += Number(incident.estimated_delay_minutes);
     }
     if (incidentDate) {
-      let week = weekByDate.get(incidentDate);
-      if (!week) {
-        week = mondayOf(incidentDate);
-        weekByDate.set(incidentDate, week);
+      let timelineKey;
+      if (mode === "demo") timelineKey = incidentDate.slice(0, 4);
+      else {
+        timelineKey = weekByDate.get(incidentDate);
+        if (!timelineKey) {
+          timelineKey = mondayOf(incidentDate);
+          weekByDate.set(incidentDate, timelineKey);
+        }
       }
-      timelineCounts.set(week, (timelineCounts.get(week) || 0) + 1);
+      timelineCounts.set(timelineKey, (timelineCounts.get(timelineKey) || 0) + 1);
     }
     const transaction = transactionForIncident(incident, servicesById);
     const transactionKey = keyOf(transaction);
@@ -436,7 +440,7 @@ function analyzeIncidentIterable({ incidents, catalog, mode = "history", filters
     reasons,
     weekdays: DAY_NAMES.map((id) => ({ id, label: id.charAt(0) + id.slice(1).toLowerCase(), count: dayCounts.get(id) || 0 })),
     shifts: [...shiftCounts].map(([id, count]) => ({ id, label: id.charAt(0) + id.slice(1).toLowerCase(), count })),
-    timeline: [...timelineCounts].sort(([left], [right]) => left.localeCompare(right)).map(([week, count]) => ({ id: week, label: week, count })),
+    timeline: [...timelineCounts].sort(([left], [right]) => left.localeCompare(right)).map(([period, count]) => ({ id: period, label: period, count })),
     durations: DURATION_RANGES.map((id) => ({ id, label: id === "MAS_DE_120" ? "> 120" : id, count: durationCounts.get(id) || 0 })),
   };
   const indicators = {
@@ -507,8 +511,14 @@ function demoOptions(options = {}, defaultCount = 1_000_000) {
   return {
     count: Math.round(clampNumber(options.count, defaultCount, 1, 1_000_000)),
     seed: Number(options.seed ?? 20261111),
-    period: { start: "2026-01-05", end: "2026-07-05" },
+    period: { start: "2005-01-01", end: "2026-11-19" },
   };
+}
+
+function demoDateAt(index, count, dates, random) {
+  if (index === 0) return dates[0];
+  if (index === count - 1) return dates.at(-1);
+  return dates[1 + Math.floor(random() * (dates.length - 2))];
 }
 
 function* demoIncidentSequence(catalog, options = {}) {
@@ -517,6 +527,8 @@ function* demoIncidentSequence(catalog, options = {}) {
   const random = seededRandom(seed);
   const services = (catalog.servicios || catalog.services || []).map(normalizeService);
   if (services.length !== 104) throw new Error("El conjunto sintético requiere exactamente 104 servicios activos");
+  const servicesByDay = new Map(DAY_NAMES.map((_, index) => [index + 1, services.filter((service) => service.day === index + 1)]));
+  const dates = eachDate(configuration.period.start, configuration.period.end);
   const compatibleByService = new Map(services.map((service) => [
     service.id,
     services.filter((candidate) => (
@@ -525,11 +537,10 @@ function* demoIncidentSequence(catalog, options = {}) {
       && candidate.day === service.day
     )),
   ]));
-  const firstMonday = "2026-01-05";
   for (let index = 0; index < count; index += 1) {
-    const primary = services[Math.floor(random() * services.length)];
-    const week = Math.floor(random() * 26);
-    const date = addDays(firstMonday, (week * 7) + primary.day - 1);
+    const date = demoDateAt(index, count, dates, random);
+    const dayServices = servicesByDay.get(isoDay(date));
+    const primary = dayServices[Math.floor(random() * dayServices.length)];
     const affected = [primary];
     if (random() < 0.18) {
       const compatible = compatibleByService.get(primary.id);
@@ -608,6 +619,12 @@ function analyzeDemoDataset({ catalog, filters = {}, parameters = {}, seed = 202
       && candidate.day === service.day
     ))
     .map(({ candidateIndex }) => candidateIndex));
+  const serviceIndexesByDay = new Map(DAY_NAMES.map((_, dayIndex) => [
+    dayIndex + 1,
+    services.map((service, serviceIndex) => ({ service, serviceIndex }))
+      .filter(({ service }) => service.day === dayIndex + 1)
+      .map(({ serviceIndex }) => serviceIndex),
+  ]));
   const scenarioCache = new Map();
   const scenarioFor = (primaryIndex, secondaryIndex) => {
     const scenarioKey = (primaryIndex * 106) + secondaryIndex + 1;
@@ -643,10 +660,7 @@ function analyzeDemoDataset({ catalog, filters = {}, parameters = {}, seed = 202
 
   const reasonCodes = ["LLUVIA", "FALLA_MECANICA", "PROBLEMA_TECNICO", "OTRO"];
   const random = seededRandom(configuration.seed);
-  const firstMonday = configuration.period.start;
-  const dates = Array.from({ length: 26 }, (_, week) => (
-    Array.from({ length: 7 }, (_, day) => addDays(firstMonday, (week * 7) + day))
-  ));
+  const dates = eachDate(configuration.period.start, configuration.period.end);
   const neighborhoodCounts = new Map();
   const truckCounts = new Map();
   const dayCounts = new Map(DAY_NAMES.map((name) => [name, 0]));
@@ -669,16 +683,16 @@ function analyzeDemoDataset({ catalog, filters = {}, parameters = {}, seed = 202
     const syntheticId = `DEMO-${String(index + 1).padStart(7, "0")}`;
     if (index === 0) firstSyntheticId = syntheticId;
     lastSyntheticId = syntheticId;
-    const primaryIndex = Math.floor(random() * services.length);
+    const date = demoDateAt(index, configuration.count, dates, random);
+    const dayServiceIndexes = serviceIndexesByDay.get(isoDay(date));
+    const primaryIndex = dayServiceIndexes[Math.floor(random() * dayServiceIndexes.length)];
     const primary = services[primaryIndex];
-    const week = Math.floor(random() * 26);
     let secondaryIndex = -1;
     if (random() < 0.18) {
       const compatible = compatibleIndexes[primaryIndex];
       if (compatible.length) secondaryIndex = compatible[Math.floor(random() * compatible.length)];
     }
     const scenario = scenarioFor(primaryIndex, secondaryIndex);
-    const date = dates[week][primary.day - 1];
 
     let reasonIndex;
     if (scenario.hasTruckC01 && random() < 0.78) reasonIndex = 1;
@@ -719,8 +733,8 @@ function analyzeDemoDataset({ catalog, filters = {}, parameters = {}, seed = 202
       delaySum += delay;
       durationIndex = DURATION_RANGES.indexOf(range) + 1;
     }
-    const weekDate = dates[week][0];
-    timelineCounts.set(weekDate, (timelineCounts.get(weekDate) || 0) + 1);
+    const year = date.slice(0, 4);
+    timelineCounts.set(year, (timelineCounts.get(year) || 0) + 1);
     for (const service of scenario.services) affectedOccurrences.add(`${service.id}@${date}`);
 
     const profileKey = ((((scenario.key * 4) + reasonIndex) * 2 + stateIndex) * 6) + durationIndex;
@@ -751,7 +765,7 @@ function analyzeDemoDataset({ catalog, filters = {}, parameters = {}, seed = 202
     reasons,
     weekdays: DAY_NAMES.map((id) => ({ id, label: id.charAt(0) + id.slice(1).toLowerCase(), count: dayCounts.get(id) || 0 })),
     shifts: [...shiftCounts].map(([id, value]) => ({ id, label: id.charAt(0) + id.slice(1).toLowerCase(), count: value })),
-    timeline: [...timelineCounts].sort(([left], [right]) => left.localeCompare(right)).map(([weekDate, value]) => ({ id: weekDate, label: weekDate, count: value })),
+    timeline: [...timelineCounts].sort(([left], [right]) => left.localeCompare(right)).map(([year, value]) => ({ id: year, label: year, count: value })),
     durations: DURATION_RANGES.map((id) => ({ id, label: id === "MAS_DE_120" ? "> 120" : id, count: durationCounts.get(id) || 0 })),
   };
   const indicators = {
@@ -773,6 +787,8 @@ function analyzeDemoDataset({ catalog, filters = {}, parameters = {}, seed = 202
     synthetic_unique_ids: configuration.count,
     synthetic_first_id: firstSyntheticId,
     synthetic_last_id: lastSyntheticId,
+    synthetic_first_date: configuration.period.start,
+    synthetic_last_date: configuration.period.end,
   };
   const analysis = {
     mode: "demo",
@@ -803,6 +819,8 @@ function analyzeDemoDataset({ catalog, filters = {}, parameters = {}, seed = 202
     unique_ids: configuration.count,
     first_id: firstSyntheticId,
     last_id: lastSyntheticId,
+    first_date: configuration.period.start,
+    last_date: configuration.period.end,
     period: configuration.period,
     processing: "Generación determinista en flujo, acumulación incremental y perfiles de transacción ponderados.",
   };

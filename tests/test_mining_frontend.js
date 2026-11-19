@@ -5,16 +5,16 @@ const view = require("../web/admin/mineria/mining-view.js");
 
 const manual = view.metadata({
   record_count: 1_000_000,
-  period_start: "2026-01-05",
-  period_end: "2026-07-05",
+  period_start: "2005-01-01",
+  period_end: "2026-11-19",
   started_at: "2026-11-19T19:30:00Z",
   completed_at: "2026-11-19T19:31:00Z",
   execution_type: "manual",
 });
 assert.deepEqual(manual, {
-  periodStatus: "Registros incluidos",
-  periodStart: "05/01/2026",
-  periodEnd: "05/07/2026",
+  periodStatus: "01/01/2005 – 19/11/2026",
+  periodStart: "01/01/2005",
+  periodEnd: "19/11/2026",
   executionAt: "19/11/2026 15:31",
   startedAt: "19/11/2026 15:30",
   executionType: "Actualización manual",

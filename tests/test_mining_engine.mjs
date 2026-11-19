@@ -61,6 +61,8 @@ assert.equal(demoOne.incidents.length, 180);
 assert.deepEqual(demoOne, demoTwo, "La semilla fija debe producir exactamente el mismo conjunto de datos");
 assert.equal(new Set(demoOne.incidents.map((row) => row.id)).size, 180);
 assert.ok(demoOne.incidents.every((row) => row.is_simulation));
+assert.equal(demoOne.incidents[0].analysis_date, "2005-01-01");
+assert.equal(demoOne.incidents.at(-1).analysis_date, "2026-11-19");
 
 const demoAnalysis = analyzeIncidents({
   incidents: demoOne.incidents,
@@ -104,10 +106,15 @@ assert.equal(million.indicators.synthetic_unique_ids, 1_000_000);
 assert.equal(million.indicators.synthetic_seed, 20261111);
 assert.equal(million.indicators.synthetic_first_id, "DEMO-0000001");
 assert.equal(million.indicators.synthetic_last_id, "DEMO-1000000");
-assert.deepEqual(million.period, { start: "2026-01-05", end: "2026-07-05" });
+assert.deepEqual(million.period, { start: "2005-01-01", end: "2026-11-19" });
+assert.equal(million.indicators.synthetic_first_date, "2005-01-01");
+assert.equal(million.indicators.synthetic_last_date, "2026-11-19");
 assert.equal(Object.keys(million.charts).length, 7, "Deben conservarse las siete gráficas calculadas");
 assert.equal(million.charts.reasons.reduce((sum, row) => sum + row.count, 0), 1_000_000);
 assert.equal(million.charts.timeline.reduce((sum, row) => sum + row.count, 0), 1_000_000);
+assert.equal(million.charts.timeline.length, 22, "La evolución anual debe cubrir de 2005 a 2026");
+assert.equal(million.charts.timeline[0].id, "2005");
+assert.equal(million.charts.timeline.at(-1).id, "2026");
 assert.equal(million.indicators.normalized_rates_applicable, false);
 assert.ok(million.charts.neighborhoods.every((row) => row.incidents_per_100_programmed === null));
 assert.ok(million.rules.length > 0);

@@ -96,12 +96,12 @@ El denominador es programación simulada, no evidencia de servicio realizado. La
 
 ### Demostración académica: un millón de registros
 
-El servidor recorre exactamente 1.000.000 de registros con semilla fija `20261111`, periodo 5 de enero a 5 de julio de 2026 y valores del catálogo. Cada registro recibe un ID secuencial único, desde `DEMO-0000001` hasta `DEMO-1000000`, pero se descarta después de actualizar los acumuladores. No se inserta en `incidents` ni se entrega al navegador.
+El servidor recorre exactamente 1.000.000 de registros con semilla fija `20261111`, periodo 1 de enero de 2005 a 19 de noviembre de 2026 y valores del catálogo. El primer registro usa el inicio y el último usa el final, por lo que ambos extremos quedan cubiertos. Cada registro recibe un ID secuencial único, desde `DEMO-0000001` hasta `DEMO-1000000`, pero se descarta después de actualizar los acumuladores. No se inserta en `incidents` ni se entrega al navegador.
 
 Distribución reproducible:
 
-- servicio principal uniforme entre los 104 servicios;
-- semana uniforme entre las 26 semanas del periodo;
+- fecha uniforme entre los días interiores del periodo, con ambos extremos garantizados;
+- servicio principal uniforme entre los servicios programados para el día elegido;
 - 18 % de probabilidad de añadir otro servicio compatible del mismo camión y día, cuando existe;
 - 10 % de probabilidad de suspensión; el resto corresponde a demora;
 - 8 % de probabilidad de marcar el registro sintético como retirado;
@@ -115,6 +115,8 @@ Se diseñaron coocurrencias reproducibles para comprobar el método, entre ellas
 - turnos de tarde con problemas técnicos en parte de las observaciones.
 
 No se escriben reglas ni métricas prefabricadas: la prueba exige que Apriori recupere la asociación de `SIM-C01` y falla mecánica a partir de las transacciones generadas. La interfaz mantiene el rótulo **DATOS SINTÉTICOS — DEMOSTRACIÓN ACADÉMICA**.
+
+La evolución temporal se agrupa por año para presentar de forma legible 22 puntos, de 2005 a 2026. `scripts/export_synthetic_demo.mjs` recorre nuevamente los registros individuales, valida IDs, campos y extremos, y calcula una huella SHA-256 sin conservar el millón en memoria. Con `--output /ruta/archivo.ndjson` también permite una exportación local en flujo; ese archivo voluminoso no se incorpora al repositorio.
 
 ### Historial registrado del prototipo
 

@@ -10,7 +10,8 @@ const elements = Object.fromEntries([
   "kpi-incidents", "kpi-neighborhoods", "kpi-trucks", "kpi-reason", "kpi-delay", "kpi-rules",
   "kpi-updated", "kpi-execution", "kpi-records-label", "kpi-records-note",
   "analysis-period-status", "analysis-period-start", "analysis-period-end", "analysis-execution-at",
-  "analysis-started-at", "analysis-execution-type", "programmed-services", "affected-services", "retired-incidents",
+  "analysis-started-at", "analysis-execution-type", "analysis-records-label", "analysis-records-count",
+  "programmed-services", "affected-services", "retired-incidents",
   "service-summary-note", "comparison-title", "comparison-note", "neighborhood-rate-heading", "truck-rate-heading",
   "neighborhood-comparison", "truck-comparison", "rule-count", "rule-intro", "rules-list", "findings-list",
 ].map((id) => [id.replaceAll("-", "_"), document.getElementById(id)]));
@@ -48,7 +49,7 @@ async function loadCatalog() {
   elements.truck_filter.append(...trucks.map((truck) => option(truck, truck)));
 }
 
-function showModeNotice(mode, recordCount = null, generatedCount = 1_000_000) {
+function showModeNotice(mode, recordCount = null, generatedCount = null) {
   elements.mode_notice.replaceChildren();
   const strong = document.createElement("strong");
   const detail = document.createElement("span");
@@ -56,8 +57,8 @@ function showModeNotice(mode, recordCount = null, generatedCount = 1_000_000) {
     elements.mode_notice.className = "mode-notice demo";
     strong.textContent = "DATOS SINTÉTICOS — DEMOSTRACIÓN ACADÉMICA";
     detail.textContent = recordCount === null
-      ? `${formatNumber(generatedCount)} registros reproducibles con semilla fija; no se insertan ni se mezclan con public.incidents.`
-      : `Se generaron ${formatNumber(generatedCount)} registros; ${formatNumber(recordCount)} cumplieron los filtros. No se insertan ni se mezclan con public.incidents.`;
+      ? "La próxima ejecución generará datos reproducibles con semilla fija; no se insertan ni se mezclan con public.incidents."
+      : `Se generaron ${formatNumber(generatedCount ?? recordCount)} registros; ${formatNumber(recordCount)} cumplieron los filtros. No se insertan ni se mezclan con public.incidents.`;
   } else {
     elements.mode_notice.className = "mode-notice history";
     strong.textContent = "HISTORIAL REGISTRADO DEL PROTOTIPO";
@@ -203,6 +204,11 @@ function renderRunMetadata(run) {
   elements.analysis_execution_at.textContent = values.executionAt;
   elements.analysis_started_at.textContent = values.startedAt;
   elements.analysis_execution_type.textContent = values.executionType;
+  const demoMode = run?.mode === "demo";
+  elements.analysis_records_label.textContent = !run
+    ? "Registros analizados"
+    : demoMode ? "Registros sintéticos analizados" : "Incidencias registradas analizadas";
+  elements.analysis_records_count.textContent = run && Number(run.record_count) >= 0 ? formatNumber(run.record_count) : "—";
 }
 
 function resetRenderedRun() {
@@ -232,10 +238,15 @@ function renderRun(run) {
   const chartData = run.chart_data || {};
   const demoMode = run.mode === "demo";
   const normalizedRates = !demoMode && indicators.normalized_rates_applicable !== false;
-  showModeNotice(run.mode, run.record_count, indicators.synthetic_records_generated || 1_000_000);
+  showModeNotice(run.mode, run.record_count, indicators.synthetic_records_generated ?? run.record_count);
   renderRunMetadata(run);
-  elements.period_start.value = run.filters?.startDate || "";
-  elements.period_end.value = run.filters?.endDate || "";
+  const unfilteredDemo = demoMode
+    && run.filters?.startDate === run.period_start
+    && run.filters?.endDate === run.period_end
+    && !run.filters?.neighborhoodId
+    && !run.filters?.truckId;
+  elements.period_start.value = unfilteredDemo ? "" : (run.filters?.startDate || "");
+  elements.period_end.value = unfilteredDemo ? "" : (run.filters?.endDate || "");
   elements.neighborhood_filter.value = run.filters?.neighborhoodId || "";
   elements.truck_filter.value = run.filters?.truckId || "";
   elements.kpi_records_label.textContent = demoMode ? "Registros sintéticos" : "Incidencias únicas";

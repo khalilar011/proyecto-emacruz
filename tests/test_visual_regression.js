@@ -20,7 +20,7 @@ const protectedHashes = {
   "web/admin/admin.js": "86c8e445e32fbd3d0a39549176da52296cc729dc8f822b6a01468fd37175841f",
   "web/config.js": "ef8bad501d1d4c47e996baf2e53e92103b2f966c08f45d817aacae884f678c38",
   "supabase/functions/mining-analysis/index.ts": "581b9296368f6ef6ea7185f166c0ec573ddcf091cf9b262bdfad422ace358d62",
-  "supabase/functions/_shared/mining-engine.mjs": "539bd813b8da6c24ecb5b4f26eed93c9e62c84a4b99d68446efdc3ab9e35f296",
+  "supabase/functions/_shared/mining-engine.mjs": "45340269b9ce30e383f28f02582da91713cdcefc3a3785550fc29265d271c8d9",
   ".github/workflows/mining-weekly.yml": "cdf4bb490ebf92c944b1056532c96f95f76f1be9022c4cf23143669805630396",
   "supabase/migrations/0001_alerta_ruta_schema.sql": "0b61155b47bdc01b2a83f6ff3b944adf7e279d2a434d59f23be932d261017087",
   "supabase/migrations/0002_catalog.sql": "b70bcc1737ebb74cb61c8969e9687b3c1e8257b2d58b2bf4c35d10db6accffb3",
@@ -63,10 +63,10 @@ for (const asset of [
 ]) assert.ok(fs.statSync(path.join(root, asset)).size > 0, `Recurso vacío: ${asset}`);
 
 const styles = read("web/styles.css");
-assert.match(styles, /\.hero \{[^}]*min-height: 520px/);
+assert.match(styles, /\.hero \{[^}]*min-height: 440px/);
 assert.match(styles, /\.search-panel \{[^}]*grid-template-columns: 1\.2fr 1fr/);
-assert.match(styles, /@media \(max-width: 720px\)[\s\S]*?\.hero \{ min-height: 560px/);
-assert.match(styles, /\.day-card \{[^}]*min-height: 112px/);
+assert.match(styles, /@media \(max-width: 720px\)[\s\S]*?\.hero \{ min-height: 485px/);
+assert.match(styles, /\.day-card \{[^}]*min-height: 88px/);
 
 const controls = [];
 const listeners = {};
