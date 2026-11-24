@@ -26,10 +26,19 @@ for (const match of miningPage.matchAll(/(?:src|href)="([^"]+)"/g)) {
 
 assert.match(admin, /href="mineria\/"[^>]*>Análisis exploratorio/);
 assert.doesNotMatch(publicPage, /admin\/mineria|Análisis exploratorio/);
+assert.doesNotMatch(publicPage, /class="academic-notice"/);
+assert.doesNotMatch(admin, /class="academic-notice"/);
+assert.doesNotMatch(miningPage, /class="academic-notice"/);
+assert.doesNotMatch(miningPage, /Herramienta académica de apoyo a decisiones/);
+assert.match(admin, /no representan información oficial/);
+assert.match(miningPage, /no representan indicadores oficiales/);
 assert.match(miningPage, /Gestión de alertas/);
 assert.match(miningPage, /<title>Análisis exploratorio · Alerta Ruta<\/title>/);
 assert.match(miningPage, /<h1>Análisis exploratorio<\/h1>/);
 assert.match(miningPage, /DATOS SINTÉTICOS — DEMOSTRACIÓN ACADÉMICA/);
+assert.match(miningFrontend, /DATOS SINTÉTICOS — DEMOSTRACIÓN ACADÉMICA/);
+assert.match(miningPage, /Interpretación académica/);
+assert.match(miningPage, /Hallazgos y preguntas para revisión/);
 assert.match(miningPage, /Historial registrado del prototipo/);
 assert.match(miningPage, /Actualizar análisis/);
 assert.equal((miningPage.match(/<canvas /g) || []).length, 7);

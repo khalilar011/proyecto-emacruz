@@ -7,7 +7,6 @@
 .ghost-button:hover, .ghost-button:focus-visible { background: var(--green-soft); }
 .text-button { border: 0; background: transparent; text-decoration: underline; box-shadow: none; }
 .admin-main { width: min(1400px, calc(100% - 40px)); margin: 0 auto; padding: 32px 0 72px; }
-.admin-main .academic-notice { width: 100%; margin: 0 0 26px; }
 .auth-card { position: relative; width: min(560px, 100%); margin: 62px auto; padding: clamp(28px, 5vw, 46px); border: 1px solid var(--line); border-radius: 28px; overflow: hidden; background: var(--surface); box-shadow: var(--shadow); }
 .auth-card::before { position: absolute; top: 0; left: 0; width: 120px; height: 4px; background: linear-gradient(90deg, var(--green), var(--yellow)); content: ""; }
 .auth-card h1 { margin-bottom: 14px; font-size: clamp(2.1rem, 7vw, 3.5rem); line-height: .98; letter-spacing: -.055em; }
@@ -15,7 +14,7 @@
 .setup-steps { margin: 18px 0; padding-left: 22px; color: var(--muted); }
 .setup-steps li { margin-bottom: 7px; }
 .auth-card form { display: grid; gap: 16px; margin-top: 26px; }
-.admin-tabs { display: flex; width: fit-content; margin: 26px 0 10px; padding: 5px; border: 1px solid var(--line); border-radius: 15px; gap: 4px; background: var(--surface); box-shadow: var(--shadow-sm); }
+.admin-tabs { display: flex; width: fit-content; margin: 0 0 10px; padding: 5px; border: 1px solid var(--line); border-radius: 15px; gap: 4px; background: var(--surface); box-shadow: var(--shadow-sm); }
 .admin-tabs a { padding: 10px 16px; border-radius: 10px; color: var(--green-dark); font-size: .81rem; font-weight: 850; text-decoration: none; }
 .admin-tabs a:hover, .admin-tabs a:focus-visible { background: var(--green-soft); }
 .admin-tabs a.active { color: #fff; background: #123b50; }
