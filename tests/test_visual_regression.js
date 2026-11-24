@@ -33,6 +33,7 @@ for (const [relativePath, expected] of Object.entries(protectedHashes)) {
 
 const pages = [
   ["web/index.html", "theme.js", "assets/brand/favicon.png", "assets/brand/alerta-ruta-mark.webp"],
+  ["web/simulacion/index.html", "../theme.js", "../assets/brand/favicon.png", "../assets/brand/alerta-ruta-mark.webp"],
   ["web/admin/index.html", "../theme.js", "../assets/brand/favicon.png", "../assets/brand/alerta-ruta-mark.webp"],
   ["web/admin/mineria/index.html", "../../theme.js", "../../assets/brand/favicon.png", "../../assets/brand/alerta-ruta-mark.webp"],
 ];
@@ -46,10 +47,11 @@ for (const [relativePath, themePath, faviconPath, logoPath] of pages) {
 }
 
 const requiredPublicIds = ["barrio-count", "barrio-search", "barrio-select", "search-status", "result", "service-status", "open-map", "main-map", "map-tabs", "map-dialog", "dialog-image"];
+const requiredSimulationIds = ["route-map", "route-truck", "simulation-clock", "state-badge", "next-destination", "start-simulation", "pause-simulation", "reset-simulation", "metric-total", "metric-travel", "metric-collection", "metric-delay", "metric-stops", "metric-finish"];
 const requiredAdminIds = ["login-form", "incident-form", "target-type", "target-id", "incident-state", "reason-code", "publish-button", "status-filter", "alerts-body", "logout"];
 const requiredMiningIds = ["refresh-analysis", "data-mode", "period-start", "period-end", "neighborhood-filter", "truck-filter", "analysis-period-start", "analysis-period-end", "analysis-execution-at", "analysis-execution-type", "neighborhood-chart", "timeline-chart", "rules-list", "findings-list", "logout"];
 
-for (const [relativePath, ids] of [["web/index.html", requiredPublicIds], ["web/admin/index.html", requiredAdminIds], ["web/admin/mineria/index.html", requiredMiningIds]]) {
+for (const [relativePath, ids] of [["web/index.html", requiredPublicIds], ["web/simulacion/index.html", requiredSimulationIds], ["web/admin/index.html", requiredAdminIds], ["web/admin/mineria/index.html", requiredMiningIds]]) {
   const html = read(relativePath);
   for (const id of ids) assert.ok(html.includes(`id="${id}"`), `Falta #${id} en ${relativePath}`);
 }
@@ -67,6 +69,11 @@ assert.match(styles, /\.hero \{[^}]*min-height: 440px/);
 assert.match(styles, /\.search-panel \{[^}]*grid-template-columns: 1\.2fr 1fr/);
 assert.match(styles, /@media \(max-width: 720px\)[\s\S]*?\.hero \{ min-height: 485px/);
 assert.match(styles, /\.day-card \{[^}]*min-height: 88px/);
+const simulationStyles = read("web/simulacion/simulacion.css");
+assert.match(simulationStyles, /@media \(max-width: 720px\)/);
+assert.match(simulationStyles, /@media \(max-width: 390px\)/);
+assert.match(simulationStyles, /\.metrics-grid \{ display: grid;/);
+assert.match(simulationStyles, /:root\[data-theme="dark"\]|var\(--surface\)/);
 
 const controls = [];
 const listeners = {};
@@ -109,4 +116,4 @@ assert.equal(documentElement.dataset.theme, "light", "El selector debe cambiar e
 assert.equal(storage.get("alerta-ruta-theme"), "light", "El selector debe persistir la preferencia");
 assert.equal(button.attributes["aria-pressed"], "false");
 
-console.log("Regresión visual validada: módulos protegidos intactos, identidad local y tema persistente en las tres rutas.");
+console.log("Regresión visual validada: módulos protegidos intactos, identidad local y tema persistente en las cuatro rutas.");

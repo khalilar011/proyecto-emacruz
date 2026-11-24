@@ -17,7 +17,8 @@ Prototipo universitario para consultar programación **simulada** de recolecció
 - Motor único en Supabase Edge Functions para actualización manual y semanal, con resultados persistidos y RLS.
 - Un único respaldo JSON si Supabase no responde durante la carga inicial.
 - Tres mapas suministrados, conservados como referencias secundarias ampliables.
-- Identidad visual propia con recursos locales de Alerta Ruta y temas claro/oscuro persistentes en las tres rutas.
+- Identidad visual propia con recursos locales de Alerta Ruta y temas claro/oscuro persistentes en las cuatro rutas.
+- Página pública `/simulacion/` con recorrido SVG sabatino de `SIM-C01`, controles y un modelo reproducible de eventos discretos sin GPS ni persistencia.
 
 La integración está conectada al proyecto Supabase `alerta-ruta-emacruz` mediante su URL y publishable key pública. Las migraciones, RLS, Auth, RPC e historial fueron comprobados contra el proyecto real; no se publica ninguna clave secreta.
 
@@ -53,6 +54,7 @@ web/
 ├── app.js
 ├── incidents.js
 ├── map-viewer.js
+├── simulacion/                                          # recorrido académico de eventos discretos
 ├── theme.js                                              # preferencia visual local, sin lógica de negocio
 ├── schedule-utils.js
 └── supabase-data.js
@@ -176,16 +178,20 @@ node tests/test_mining_engine.mjs
 node tests/test_mining_integration.mjs
 node tests/test_mining_frontend.js
 node tests/test_visual_regression.js
+node tests/test_route_simulation.js
 node scripts/benchmark_mining.mjs
 node --check web/app.js
 node --check web/theme.js
 node --check web/map-viewer.js
 node --check web/supabase-data.js
+node --check web/simulacion/simulacion.js
 node --check web/admin/admin.js
 node --check web/admin/mineria/mining.js
 ```
 
 Las pruebas locales cubren consistencia Excel/JSON, cuatro servicios por barrio, los tres mapas del visor, límites de zoom, catálogo SQL con 104 tuplas cerradas, estructura RLS/RPC, respaldo manual, próxima recolección, alcance temporal y prioridad. `security_checks.sql` y `admin_flow_checks.sql` también fueron ejecutados satisfactoriamente en el proyecto real.
+
+La simulación de ruta valida contra el mismo JSON los servicios sabatinos `D2-S067`, `D2-S068` y `D2-S069`. Usa semilla `20261123`, recolección triangular `T(18, 24, 32)`, desplazamiento triangular `T(20, 28, 38)`, demora Bernoulli `p=0,50` y duración uniforme discreta de 4–12 minutos. Los parámetros son supuestos académicos separados de las ventanas del catálogo; el detalle y los límites están en [docs/simulacion-ruta.md](docs/simulacion-ruta.md).
 
 Con la CLI autenticada y el repositorio vinculado al proyecto correcto, las verificaciones remotas son:
 
